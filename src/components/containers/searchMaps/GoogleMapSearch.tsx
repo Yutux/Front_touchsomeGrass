@@ -171,7 +171,7 @@ export default function GoogleMapSearch({ onPlaceSelected }: { onPlaceSelected: 
   };
 
   return (
-    <LoadScript googleMapsApiKey="AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="" libraries={["places"]}>
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={markerPosition || center}
@@ -235,3 +235,4 @@ export default function GoogleMapSearch({ onPlaceSelected }: { onPlaceSelected: 
     </LoadScript>
   );
 }
+
