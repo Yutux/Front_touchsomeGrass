@@ -273,7 +273,7 @@ export default function TrajetMap() {
 
   return (
     <LoadScript
-      googleMapsApiKey="AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs"
+      googleMapsApiKey=""
       libraries={["places"]}
     >
       <div style={{ display: "flex", width: "100%" }}>
@@ -346,4 +346,5 @@ export default function TrajetMap() {
       </div>
     </LoadScript>
   );
+
 }
