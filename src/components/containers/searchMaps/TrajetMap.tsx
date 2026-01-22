@@ -614,4 +614,8 @@ export default function TrajetMap() {
       </Box>
     </Box>
   );
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2e67c09a93b1f3fb5ca6fecf7f7d1d97fec51a97
 }

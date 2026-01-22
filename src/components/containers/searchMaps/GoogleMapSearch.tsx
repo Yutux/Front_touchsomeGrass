@@ -293,11 +293,39 @@ export default function GoogleMapSearch({
     }
   };
 
-  const handleNext = () => {
-    if (openIndex !== null && selectedPlace?.photoUrls) {
-      setOpenIndex((openIndex + 1) % selectedPlace.photoUrls.length);
-    }
-  };
+  return (
+    <LoadScript googleMapsApiKey="" libraries={["places"]}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={markerPosition || center}
+        zoom={12}
+        onClick={handleMapClick} // Uniquement ce handler
+        onLoad={handleMapLoad}
+      >
+        <StandaloneSearchBox
+          onLoad={(ref) => (searchBoxRef.current = ref)}
+          onPlacesChanged={handlePlacesChanged}
+        >
+          <input
+            type="text"
+            placeholder="Rechercher un endroit à Paris"
+            style={{
+              boxSizing: "border-box",
+              border: "1px solid transparent",
+              width: "240px",
+              height: "40px",
+              padding: "0 12px",
+              position: "absolute",
+              top: "10px",
+              left: "50%",
+              marginLeft: "-120px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              outline: "none",
+              textOverflow: "ellipses",
+            }}
+          />
+        </StandaloneSearchBox>
 
   const modalContent = (
     <AnimatePresence mode="wait">
@@ -608,4 +636,9 @@ export default function GoogleMapSearch({
       </Box>
     </LoadScript>
   );
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> 2e67c09a93b1f3fb5ca6fecf7f7d1d97fec51a97
