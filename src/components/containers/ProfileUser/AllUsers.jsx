@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBCardTitle, MDBCardText, MDBCardImage, MDBBtn } from "mdb-react-ui-kit";
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Avatar,
+  Typography,
+  Button,
+  CircularProgress,
+  Container,
+} from "@mui/material";
 
 const AllUsers = () => {
-  const [users, setUsers] = useState([]); // Toujours un tableau vide au départ
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -11,56 +22,104 @@ const AllUsers = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
+        // Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.userList && Array.isArray(data.userList)) {
-          setUsers(data.userList); // ⚠️ On extrait bien "userList"
+          setUsers(data.userList);
         } else {
           console.error("Les données reçues ne contiennent pas userList :", data);
-          setUsers([]); // Évite l'erreur si la réponse est mal formée
+          setUsers([]);
         }
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Erreur lors du chargement des utilisateurs :", error);
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading)
+    return (
+      <Box
+        sx={{
+          height: "80vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <CircularProgress color="primary" />
+        <Typography variant="h6">Chargement des utilisateurs...</Typography>
+      </Box>
+    );
 
   return (
-    <MDBContainer>
-      <h2 className="my-4 text-center">Liste des Utilisateurs</h2>
-      <MDBRow className="justify-content-center">
-        {users.length > 0 ? (
-          users.map(user => (
-            <MDBCol key={user.id} md="4" className="mb-4">
-              <MDBCard>
-                <MDBCardBody>
-                  <MDBCardImage
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-profiles/avatar-1.webp"
-                    alt="User Avatar"
-                    style={{ width: "100px", borderRadius: "50%" }}
-                    className="mb-3"
-                  />
-                  <MDBCardTitle>{user.lastname} {user.firstname}</MDBCardTitle>
-                  <MDBCardText>{user.email}</MDBCardText>
-                  <Link to={`/user/${user.id}`}>
-                    <MDBBtn>Voir Profil</MDBBtn>
-                  </Link>
-                </MDBCardBody>
-              </MDBCard>
-            </MDBCol>
-          ))
-        ) : (
-          <p>Aucun utilisateur trouvé.</p>
-        )}
-      </MDBRow>
-    </MDBContainer>
+    <Container sx={{ py: 6 }}>
+      <Typography
+        variant="h4"
+        align="center"
+        fontWeight="bold"
+        color="primary"
+        gutterBottom
+      >
+        Liste des Utilisateurs
+      </Typography>
+
+      {users.length > 0 ? (
+        <Grid container spacing={3} justifyContent="center">
+          {users.map((user) => (
+            <Grid item key={user.id} xs={12} sm={6} md={4}>
+              <Card
+                sx={{
+                  textAlign: "center",
+                  p: 3,
+                  borderRadius: 3,
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    boxShadow: 4,
+                  },
+                }}
+              >
+                <Avatar
+                  src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  alt="User Avatar"
+                  sx={{ width: 100, height: 100, mx: "auto", mb: 2 }}
+                />
+                <CardContent>
+                  <Typography variant="h6" fontWeight="bold">
+                    {user.lastname} {user.firstname}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    {user.email}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: "center" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to={`/user/${user.id}`}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Voir Profil
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Box textAlign="center" mt={4}>
+          <Typography variant="h6">Aucun utilisateur trouvé.</Typography>
+        </Box>
+      )}
+    </Container>
   );
 };
 

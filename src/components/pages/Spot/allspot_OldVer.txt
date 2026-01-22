@@ -1,0 +1,269 @@
+// // src/pages/AllSpots.jsx
+// import React, { useEffect, useState } from "react";
+// import request from "../../utils/request";
+// import {
+//   ThemeProvider,
+//   createTheme,
+//   Container,
+//   Card,
+//   CardContent,
+//   CardMedia,
+//   Typography,
+//   Button,
+//   Box,
+//   Chip,
+//   Stack,
+//   Grid,
+//   Skeleton,
+// } from "@mui/material";
+// import { Link } from "react-router-dom";
+// import PlaceIcon from "@mui/icons-material/Place";
+
+// const theme = createTheme({
+//   palette: {
+//     primary: { main: "#d32f2f" },
+//     background: { default: "#f9fafb" },
+//   },
+//   typography: { fontFamily: "Inter, sans-serif" },
+// });
+
+// /* tailles compactes */
+// const IMG_H = { xs: 136, sm: 156, md: 168 };
+// const PREVIEW_H = 56;
+// const DESC_MIN_H = 48;
+
+// // 🔥 Clé API Google Maps
+// const GOOGLE_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
+
+// // 🔥 Fonction pour générer la bonne URL d'image
+// const getImageUrl = (imagePath) => {
+//   if (!imagePath) return "/images/no-image.png";
+
+//   // Vérifier si c'est une photo_reference Google (longue string sans "/" ni ".")
+//   if (imagePath.length > 100 && !imagePath.includes('/') && !imagePath.includes('.')) {
+//     return `https://maps.googleapis.com/maps/api/place/photo?photoreference=${imagePath}&maxwidth=800&key=${GOOGLE_API_KEY}`;
+//   }
+
+//   // Si c'est déjà une URL complète (http/https)
+//   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+//     return imagePath;
+//   }
+
+//   // Sinon, c'est un fichier local
+//   return `http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${imagePath}`;
+// };
+
+// function SpotCard({ spot }) {
+//   // 🔥 Utiliser la fonction getImageUrl pour l'image principale
+//   const mainImage = getImageUrl(spot?.imagePath || (spot?.imageUrls && spot.imageUrls[0]));
+
+//   const hasCoords =
+//     typeof spot?.latitude === "number" &&
+//     typeof spot?.longitude === "number" &&
+//     Math.abs(spot.latitude) + Math.abs(spot.longitude) > 0.001;
+
+//   return (
+//     <Card
+//       sx={{
+//         width: "100%",
+//         height: "100%",
+//         borderRadius: 2.5,
+//         overflow: "hidden",
+//         boxShadow: "0 3px 16px rgba(0,0,0,0.08)",
+//         transition: "transform .22s ease, box-shadow .22s ease",
+//         display: "flex",
+//         flexDirection: "column",
+//         "&:hover": { transform: "translateY(-4px)", boxShadow: "0 6px 18px rgba(0,0,0,0.14)" },
+//       }}
+//     >
+//       {/* Image principale */}
+//       <Box sx={{ position: "relative" }}>
+//         <CardMedia
+//           component="img"
+//           loading="lazy"
+//           image={mainImage}
+//           alt={spot?.name || "Spot"}
+//           sx={{ height: IMG_H, objectFit: "cover" }}
+//           onError={(e) => {
+//             e.currentTarget.onerror = null;
+//             e.currentTarget.src = "/images/no-image.png";
+//           }}
+//         />
+//         {hasCoords && (
+//           <Chip
+//             icon={<PlaceIcon />}
+//             label={`${spot.latitude.toFixed(3)}, ${spot.longitude.toFixed(3)}`}
+//             size="small"
+//             sx={{
+//               position: "absolute",
+//               bottom: 8,
+//               left: 8,
+//               height: 24,
+//               backgroundColor: "rgba(255,255,255,0.9)",
+//               fontWeight: 600,
+//               "& .MuiChip-label": { px: 0.75 },
+//             }}
+//           />
+//         )}
+//       </Box>
+
+//       {/* 🔥 Préviews - Utiliser getImageUrl pour chaque image */}
+//       {Array.isArray(spot?.imageUrls) && spot.imageUrls.length > 1 ? (
+//         <Stack
+//           direction="row"
+//           spacing={1}
+//           sx={{
+//             p: 1,
+//             px: 1.25,
+//             flexWrap: "wrap",
+//             rowGap: 1,
+//             height: PREVIEW_H,
+//             overflow: "hidden",
+//           }}
+//         >
+//           {spot.imageUrls.slice(1, 6).map((imagePath, index) => (
+//             <Box
+//               key={index}
+//               component="img"
+//               src={getImageUrl(imagePath)} // 🔥 Utiliser la fonction
+//               loading="lazy"
+//               alt={`preview-${index}`}
+//               onError={(e) => {
+//                 e.currentTarget.onerror = null;
+//                 e.currentTarget.src = "/images/no-image.png";
+//               }}
+//               sx={{
+//                 width: 50,
+//                 height: 50,
+//                 borderRadius: 1.25,
+//                 objectFit: "cover",
+//                 flex: "0 0 auto",
+//               }}
+//             />
+//           ))}
+//         </Stack>
+//       ) : (
+//         <Box sx={{ height: PREVIEW_H }} />
+//       )}
+
+//       {/* Contenu */}
+//       <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", pt: 1, pb: 1.25 }}>
+//         <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
+//           {spot?.name || "Spot"}
+//         </Typography>
+
+//         <Typography
+//           variant="body2"
+//           color="text.secondary"
+//           sx={{
+//             mt: 0.5,
+//             mb: 1.25,
+//             display: "-webkit-box",
+//             WebkitLineClamp: 2,
+//             WebkitBoxOrient: "vertical",
+//             overflow: "hidden",
+//             minHeight: DESC_MIN_H,
+//           }}
+//         >
+//           {spot?.description || "Aucune description disponible."}
+//         </Typography>
+
+//         <Button
+//           variant="contained"
+//           color="primary"
+//           fullWidth
+//           component={Link}
+//           to={`/spot/${spot.id}`}
+//           sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 700, py: 0.75, mt: "auto" }}
+//         >
+//           Voir plus
+//         </Button>
+//       </CardContent>
+//     </Card>
+//   );
+// }
+
+// function SpotCardSkeleton() {
+//   return (
+//     <Card sx={{ width: "100%", borderRadius: 2.5, overflow: "hidden" }}>
+//       <Skeleton variant="rectangular" height={IMG_H.md} />
+//       <Box sx={{ p: 1.5 }}>
+//         <Skeleton width="75%" />
+//         <Skeleton width="55%" />
+//         <Skeleton width="40%" />
+//         <Skeleton variant="rectangular" height={34} sx={{ mt: 1.25, borderRadius: 1.5 }} />
+//       </Box>
+//     </Card>
+//   );
+// }
+
+// const AllSpotsContent = () => {
+//   const [spots, setSpots] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     request("http://localhost:8088/AUTH-SERVICE/api/v1/spots/get/all", "GET", {}, false)
+//       .then((response) => {
+//         console.log("📋 Spots récupérés:", response?.data);
+        
+//         if (Array.isArray(response?.data)) {
+//           setSpots(response.data);
+//         } else if (response?.data?.spots) {
+//           setSpots(response.data.spots);
+//         } else {
+//           setSpots([]);
+//         }
+//       })
+//       .catch((error) => console.error("❌ Erreur lors du chargement des spots :", error))
+//       .finally(() => setLoading(false));
+//   }, []);
+
+//   return (
+//     <Container
+//       maxWidth="xl"
+//       sx={{
+//         minHeight: "90vh",
+//         backgroundColor: "background.default",
+//         py: { xs: 1.5, sm: 2.5, md: 3 },
+//         pb: { xs: "calc(var(--bn-h, 72px) + 12px)", sm: 4 },
+//       }}
+//     >
+//       {loading ? (
+//         <Grid container spacing={{ xs: 1.5, sm: 2.5 }} sx={{ px: { xs: 1, sm: 0 } }}>
+//           {Array.from({ length: 8 }).map((_, i) => (
+//             <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+//               <SpotCardSkeleton />
+//             </Grid>
+//           ))}
+//         </Grid>
+//       ) : spots.length > 0 ? (
+//         <Grid container spacing={{ xs: 1.5, sm: 2.5 }} sx={{ px: { xs: 1, sm: 0 } }}>
+//           {spots.map((spot) => (
+//             <Grid item xs={12} sm={6} md={4} lg={3} key={spot.id}>
+//               <SpotCard spot={spot} />
+//             </Grid>
+//           ))}
+//         </Grid>
+//       ) : (
+//         <Box sx={{ py: 6, textAlign: "center" }}>
+//           <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+//             Aucun spot disponible.
+//           </Typography>
+//           <Button component={Link} to="/allspot" variant="outlined">
+//             Réessayer
+//           </Button>
+//         </Box>
+//       )}
+//     </Container>
+//   );
+// };
+
+// const AllSpots = () => (
+//   <ThemeProvider theme={theme}>
+//     <AllSpotsContent />
+//   </ThemeProvider>
+// );
+
+// export default AllSpots;
+
+// src/pages/AllSpots.jsx

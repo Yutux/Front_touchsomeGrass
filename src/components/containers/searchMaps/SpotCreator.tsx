@@ -1,0 +1,115 @@
+import React, { useState } from "react";
+import GoogleMapSearch from "./GoogleMapSearch";
+
+// 🔹 Même interface que celle utilisée dans GoogleMapSearch
+interface PlaceData {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  rating?: number;
+  photos?: string[];
+}
+
+export default function SpotCreator() {
+  const [selectedPlace, setSelectedPlace] = useState<PlaceData | null>(null);
+  const [description, setDescription] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+
+  // 🗺️ Récupère les infos depuis la carte Google
+  const handlePlaceSelected = (placeData: PlaceData) => {
+    setSelectedPlace(placeData);
+  };
+
+  // 📤 Envoie les données au backend Spring Boot
+  const handleSubmit = async () => {
+    if (!selectedPlace) {
+      alert("Veuillez d'abord choisir un lieu sur la carte !");
+      return;
+    }
+
+    const spotData = {
+      name: selectedPlace.name,
+      description,
+      latitude: selectedPlace.latitude,
+      longitude: selectedPlace.longitude,
+      imagePath: "",
+      imageUrls: selectedPlace.photos || [],
+      creator: null, // géré côté backend
+    };
+
+    const formData = new FormData();
+    formData.append("spot", new Blob([JSON.stringify(spotData)], { type: "application/json" }));
+
+    files.forEach((file) => formData.append("files", file));
+
+    try {
+      const response = await fetch("http://localhost:8088/AUTH-SERVICE/api/v1/spots/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erreur serveur : ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("✅ Spot créé :", data);
+      alert("✅ Spot créé avec succès !");
+    } catch (error) {
+      console.error("❌ Erreur lors de l’envoi :", error);
+      alert("Erreur lors de la création du spot !");
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Créer un nouveau Spot</h2>
+
+      {/* 🗺️ Carte Google */}
+      
+      {selectedPlace && (
+        <div style={{ marginTop: "20px" }}>
+          <h3>{selectedPlace.name}</h3>
+          <p>{selectedPlace.address}</p>
+          <p>
+            📍 {selectedPlace.latitude.toFixed(4)}, {selectedPlace.longitude.toFixed(4)}
+          </p>
+
+          {/* 📝 Description */}
+          <textarea
+            placeholder="Ajoutez une description..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            style={{ width: "100%", height: "80px", marginTop: "10px" }}
+          />
+
+          {/* 📸 Upload fichiers */}
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => setFiles(Array.from(e.target.files || []))}
+            style={{ marginTop: "10px" }}
+          />
+
+          <button
+            onClick={handleSubmit}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              backgroundColor: "#1976d2",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Envoyer au backend 🚀
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

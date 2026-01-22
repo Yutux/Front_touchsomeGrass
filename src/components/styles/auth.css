@@ -49,44 +49,57 @@
     margin: 15px 0;
   }
   
-  button {
-    border-radius: 20px;
-    border: 1px solid #ff4b2b;
-    background-color: #ff4b2b;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 12px 45px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: transform 80ms ease-in;
-  }
+/* 🌿 Style global pour les boutons natifs React uniquement */
+button:not(.btn) {
+  border-radius: 20px;
+  border: 1px solid #ff4b2b;
+  background-color: #ff4b2b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in;
+}
 
-  .button1 {
-    border-radius: 10px;
-    border: 1px solid #ff4b2b;
-    background-color: #ff4b2b;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 10px 30px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: transform 80ms ease-in;
-  }
-  
-  button:active {
-    transform: scale(0.95);
-  }
-  
-  button:focus {
-    outline: none;
-  }
-  
-  button.ghost {
-    background-color: transparent;
-    border-color: #ffffff;
-  }
+/* Variante personnalisée (si tu l'utilises ailleurs) */
+.button1 {
+  border-radius: 10px;
+  border: 1px solid #ff4b2b;
+  background-color: #ff4b2b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 10px 30px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in;
+}
+
+/* Effet de clic uniquement pour les boutons natifs, pas pour MDBBtn */
+/* Effet de clic uniquement sur les boutons natifs */
+button:not(.btn):active {
+  transform: scale(0.95);
+}
+
+/* Retire le contour bleu lors du focus sur les boutons natifs */
+button:not(.btn):focus {
+  outline: none;
+}
+
+/* Variante transparente si besoin */
+button.ghost {
+  background-color: transparent;
+  border-color: #ffffff;
+}
+
+/* 🚫 Neutralise tout effet d’agrandissement sur MDBBtn */
+.btn:active {
+  transform: none !important;
+  transition: none !important;
+}
+
   
   form {
     background-color: #ffffff;

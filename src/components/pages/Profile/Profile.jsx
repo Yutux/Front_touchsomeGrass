@@ -1,36 +1,28 @@
-import React, { useEffect, useState } from 'react'
-import ProfileUser from '../../containers/ProfileUser/ProfileUser';
-import Updatable from '../../containers/Updating/Updating';
+// src/pages/Profile.jsx
+import React, { useState } from "react";
+import { Helmet } from "react-helmet";
+import ProfileUser from "../../containers/ProfileUser/ProfileUser";
+import Updatable from "../../containers/Updating/Updating";
 
-import { Helmet } from 'react-helmet';
+// OPTION A (recommandée): image dans /public/images/profile-bg.jpg
+const PUBLIC_BG = "/images/profile-bg.jpg";
+
+// OPTION B (alternative): importer une image depuis src
+// import bg from "../../assets/background.jpg"; // puis utiliser bg dans style
 
 export default function Profile(props) {
-    const [updatableUser, setUpdatableUser] = useState(props);
-    const [wantUpdate, setWantUpdate] = useState(false);
+  const [wantUpdate, setWantUpdate] = useState(false);
 
-    function handleUpdate(e) {
-        e.preventDefault();
-        setWantUpdate(!wantUpdate);
-    }
-
-    useEffect(() => {
-        setUpdatableUser(props);
-    }, [props]);
+  const handleUpdate = (e) => {
+    e?.preventDefault?.();
+    setWantUpdate((v) => !v);
+  };
 
   return (
-    <div>
-      <Helmet>
-        <style>
-          {`
-            body {
-              background-image: url("/front-end/my-app/src/components/styles/background.jpg");
-            }
-
-          `}
-        </style>
-      </Helmet>
-      {wantUpdate ? <Updatable user={updatableUser}/> : <ProfileUser user={updatableUser} />}
-      <button className="button1" onClick={handleUpdate}>{wantUpdate ? "profile" : "update"}</button>
-    </div>
-  )
+  <div
+    
+  >
+    
+  </div>
+);
 }

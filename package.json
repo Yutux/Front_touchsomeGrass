@@ -5,18 +5,25 @@
   "proxy": "http://localhost:8761/eureka",
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.4.7",
-    "@mui/material": "^6.4.7",
+    "@emotion/styled": "^11.14.1",
+    "@headlessui/react": "^2.2.9",
+    "@mantine/core": "^8.3.5",
+    "@mantine/hooks": "^8.3.5",
+    "@mantine/notifications": "^8.3.5",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
     "@react-google-maps/api": "^2.20.7",
+    "@tabler/icons-react": "^3.35.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
     "axios": "^1.6.0",
     "bootstrap": "^5.3.3",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.24",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
-    "mdb-react-ui-kit": "^7.0.0",
+    "motion": "^12.23.24",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.9",
     "react-cookie": "^6.1.1",
@@ -55,6 +62,11 @@
     ]
   },
   "devDependencies": {
-    "@types/google.maps": "^3.58.1"
+    "@types/google.maps": "^3.58.1",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "tailwindcss": "^4.1.14"
   }
 }

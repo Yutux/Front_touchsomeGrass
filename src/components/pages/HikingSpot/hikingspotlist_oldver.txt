@@ -1,0 +1,330 @@
+// // src/pages/HikingSpotList.jsx
+// import React, { useEffect, useState } from "react";
+// import request from "../../utils/request";
+// import {
+//   ThemeProvider,
+//   createTheme,
+//   Container,
+//   Card,
+//   CardContent,
+//   CardMedia,
+//   Typography,
+//   Button,
+//   Box,
+//   Chip,
+//   Stack,
+//   Tooltip,
+//   Grid,
+//   Skeleton,
+// } from "@mui/material";
+// import { Link } from "react-router-dom";
+// import TerrainIcon from "@mui/icons-material/Terrain";
+// import PlaceIcon from "@mui/icons-material/Place";
+// import AccessTimeIcon from "@mui/icons-material/AccessTime";
+// import MapIcon from "@mui/icons-material/Map";
+
+// /* --- thème --- */
+// const theme = createTheme({
+//   palette: {
+//     primary: { main: "#2e7d32" },
+//     secondary: { main: "#0288d1" },
+//     background: { default: "#f4f6f8" },
+//   },
+//   typography: {
+//     fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+//     body2: { fontSize: 13.5 },
+//     caption: { fontSize: 12 },
+//   },
+// });
+
+// /* --- constantes compacité --- */
+// const IMG_H = { xs: 136, sm: 156, md: 168 }; // image plus basse
+// const PREVIEW_H = 56;                         // bande previews compacte
+// const DESC_MIN_H = 48;                        // description compacte
+
+// /* ------------------ Carte Spot ------------------ */
+// function SpotCard({ spot }) {
+//   const mainImage =
+//     spot?.imagePath && (spot.imagePath.startsWith("http") || spot.imagePath.startsWith("https"))
+//       ? spot.imagePath
+//       : spot?.imagePath
+//       ? `http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${spot.imagePath}`
+//       : (spot?.imageUrls && spot.imageUrls[0]) || "/images/no-image.png";
+
+//   const distance = typeof spot?.distance === "number" ? spot.distance : null;
+//   const duration = typeof spot?.duration === "number" ? spot.duration : null;
+
+//   // n’afficher que si données “vraies”
+//   const hasDistance = typeof distance === "number" && distance > 0.001;
+//   const hasDuration = typeof duration === "number" && duration > 0.5;
+//   const hasCoords =
+//     typeof spot?.startLatitude === "number" &&
+//     typeof spot?.startLongitude === "number" &&
+//     Math.abs(spot.startLatitude) + Math.abs(spot.startLongitude) > 0.001;
+
+//   return (
+//     <Card
+//       sx={{
+//         width: "100%",
+//         height: "100%",
+//         borderRadius: 2.5,
+//         overflow: "hidden",
+//         boxShadow: "0 3px 16px rgba(0,0,0,0.08)",
+//         transition: "transform .22s ease, box-shadow .22s ease",
+//         display: "flex",
+//         flexDirection: "column",
+//         "&:hover": { transform: "translateY(-4px)", boxShadow: "0 6px 18px rgba(0,0,0,0.14)" },
+//       }}
+//     >
+//       {/* Image principale (compact) */}
+//       <Box sx={{ position: "relative" }}>
+//         <CardMedia
+//           component="img"
+//           loading="lazy"
+//           image={mainImage}
+//           alt={spot?.name || "Hiking spot"}
+//           onError={(e) => {
+//             e.currentTarget.onerror = null;
+//             e.currentTarget.src = "/images/no-image.png";
+//           }}
+//           sx={{ height: IMG_H, objectFit: "cover" }}
+//         />
+//         {spot?.name && (
+//           <Chip
+//             icon={<TerrainIcon />}
+//             label={spot.name}
+//             size="small"
+//             sx={{
+//               position: "absolute",
+//               top: 8,
+//               left: 8,
+//               px: 0.75,
+//               height: 24,
+//               backgroundColor:
+//                 (spot?.difficultyLevel ?? 0) < 3
+//                   ? "rgba(76,175,80,0.9)"
+//                   : (spot?.difficultyLevel ?? 0) < 5
+//                   ? "rgba(255,193,7,0.9)"
+//                   : "rgba(244,67,54,0.9)",
+//               color: "white",
+//               fontWeight: 600,
+//             }}
+//           />
+//         )}
+//       </Box>
+
+//       {/* Previews: hauteur fixe (sinon spacer) */}
+//       {Array.isArray(spot?.imageUrls) && spot.imageUrls.length > 1 ? (
+//         <Stack
+//           direction="row"
+//           spacing={1}
+//           sx={{
+//             p: 1,
+//             px: 1.25,
+//             flexWrap: "wrap",
+//             rowGap: 1,
+//             height: PREVIEW_H,
+//             overflow: "hidden",
+//           }}
+//         >
+//           {spot.imageUrls.slice(1, 6).map((url, index) => (
+//             <Box
+//               key={index}
+//               component="img"
+//               src={url}
+//               loading="lazy"
+//               alt={`preview-${index}`}
+//               onError={(e) => {
+//                 e.currentTarget.onerror = null;
+//                 e.currentTarget.src = "/images/no-image.png";
+//               }}
+//               sx={{
+//                 width: 50,
+//                 height: 50,
+//                 borderRadius: 1.25,
+//                 objectFit: "cover",
+//                 flex: "0 0 auto",
+//               }}
+//             />
+//           ))}
+//         </Stack>
+//       ) : (
+//         <Box sx={{ height: PREVIEW_H }} />
+//       )}
+
+//       <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", pt: 1, pb: 1.25 }}>
+//         {/* Description compacte */}
+//         <Typography
+//           variant="body2"
+//           color="text.secondary"
+//           sx={{
+//             mb: 0.75,
+//             display: "-webkit-box",
+//             WebkitLineClamp: 2,
+//             WebkitBoxOrient: "vertical",
+//             overflow: "hidden",
+//             minHeight: DESC_MIN_H,
+//           }}
+//         >
+//           {spot?.description || "Aucune description disponible."}
+//         </Typography>
+
+//         {/* Région & Créateur */}
+//         <Stack direction="row" spacing={0.75} sx={{ mb: 0.75, flexWrap: "wrap" }}>
+//           {spot?.region && (
+//             <Chip
+//               icon={<MapIcon />}
+//               label={spot.region}
+//               size="small"
+//               sx={{ height: 24, "& .MuiChip-label": { px: 0.75 } }}
+//             />
+//           )}
+//           {spot?.creatorName && (
+//             <Chip
+//               label={`👤 ${spot.creatorName}`}
+//               variant="outlined"
+//               size="small"
+//               sx={{ height: 24, "& .MuiChip-label": { px: 0.75 } }}
+//             />
+//           )}
+//         </Stack>
+
+//         {/* Distance & durée (sans 0) */}
+//         <Stack direction="row" spacing={0.75} sx={{ mb: hasCoords ? 0.5 : 1, alignItems: "center", flexWrap: "wrap" }}>
+//           {hasDistance && (
+//             <Tooltip title="Distance totale">
+//               <Chip
+//                 icon={<TerrainIcon />}
+//                 label={`${distance.toFixed(1)} km`}
+//                 color="primary"
+//                 size="small"
+//                 sx={{ height: 24, "& .MuiChip-label": { px: 0.75 } }}
+//               />
+//             </Tooltip>
+//           )}
+//           {hasDuration && (
+//             <Tooltip title="Durée estimée">
+//               <Chip
+//                 icon={<AccessTimeIcon />}
+//                 label={`${Math.round(duration)} min`}
+//                 color="secondary"
+//                 size="small"
+//                 sx={{ height: 24, "& .MuiChip-label": { px: 0.75 } }}
+//               />
+//             </Tooltip>
+//           )}
+//         </Stack>
+
+//         {/* Coordonnées (sans 0,0) */}
+//         {hasCoords && (
+//           <Typography
+//             variant="caption"
+//             sx={{ color: "text.secondary", display: "flex", alignItems: "center", mb: 1, gap: 0.5 }}
+//           >
+//             <PlaceIcon fontSize="small" />
+//             {spot.startLatitude.toFixed(3)}, {spot.startLongitude.toFixed(3)}
+//           </Typography>
+//         )}
+
+//         {/* CTA collé en bas */}
+//         <Button
+//           variant="contained"
+//           color="primary"
+//           fullWidth
+//           component={Link}
+//           to={`/HikingSpot/${spot.id}`}
+//           sx={{
+//             mt: "auto",
+//             borderRadius: 1.5,
+//             textTransform: "none",
+//             fontWeight: 700,
+//             py: 0.75,
+//             fontSize: 14,
+//           }}
+//         >
+//           Voir les détails
+//         </Button>
+//       </CardContent>
+//     </Card>
+//   );
+// }
+
+// /* ------------------ Skeleton (compact) ------------------ */
+// function SpotCardSkeleton() {
+//   return (
+//     <Card sx={{ width: "100%", borderRadius: 2.5, overflow: "hidden" }}>
+//       <Skeleton variant="rectangular" height={IMG_H.md} />
+//       <Box sx={{ p: 1.5 }}>
+//         <Skeleton width="80%" />
+//         <Skeleton width="55%" />
+//         <Skeleton width="40%" />
+//         <Skeleton variant="rectangular" height={34} sx={{ mt: 1.25, borderRadius: 1.5 }} />
+//       </Box>
+//     </Card>
+//   );
+// }
+
+// /* ------------------ Liste ------------------ */
+// function HikingSpotListContent() {
+//   const [hikingSpots, setHikingSpots] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     request("http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/get/all", "GET", {}, false)
+//       .then((response) => {
+//         if (response?.data?.hikingSpots) setHikingSpots(response.data.hikingSpots);
+//         else setHikingSpots([]);
+//       })
+//       .catch((error) => console.error("❌ Erreur lors du chargement des spots :", error))
+//       .finally(() => setLoading(false));
+//   }, []);
+
+//   return (
+//     <Container
+//       maxWidth="xl"
+//       sx={{
+//         minHeight: "90vh",
+//         backgroundColor: "background.default",
+//         py: { xs: 1.5, sm: 2.5, md: 3 },
+//         pb: { xs: 9, sm: 4 },         // place pour la bottom nav
+//       }}
+//     >
+//       {loading ? (
+//         <Grid container spacing={{ xs: 1.5, sm: 2.5 }} sx={{ px: { xs: 1, sm: 0 } }}>
+//           {Array.from({ length: 8 }).map((_, i) => (
+//             <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+//               <SpotCardSkeleton />
+//             </Grid>
+//           ))}
+//         </Grid>
+//       ) : hikingSpots.length > 0 ? (
+//         <Grid container spacing={{ xs: 1.5, sm: 2.5 }} sx={{ px: { xs: 1, sm: 0 } }}>
+//           {hikingSpots.map((spot) => (
+//             <Grid item xs={12} sm={6} md={4} lg={3} key={spot.id}>
+//               <SpotCard spot={spot} />
+//             </Grid>
+//           ))}
+//         </Grid>
+//       ) : (
+//         <Box sx={{ py: 6, textAlign: "center" }}>
+//           <Typography variant="h6" sx={{ mb: 2 }}>
+//             Aucun spot disponible.
+//           </Typography>
+//           <Button component={Link} to="/allhikingspot" variant="outlined">
+//             Réessayer
+//           </Button>
+//         </Box>
+//       )}
+//     </Container>
+//   );
+// }
+
+// const HikingSpotList = () => (
+//   <ThemeProvider theme={theme}>
+//     <HikingSpotListContent />
+//   </ThemeProvider>
+// );
+
+// export default HikingSpotList;
+
+// src/pages/HikingSpotList.jsx

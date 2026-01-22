@@ -28,7 +28,7 @@ export default function TestForm({ place }: { place: PlaceData }) {
 
   return (
     <div>
-      <GoogleMapSearch onPlaceSelected={handlePlaceSelected} />
+      
       <form style={{ marginTop: 20 }}>
         <div>
           <label>Nom du lieu :</label>
