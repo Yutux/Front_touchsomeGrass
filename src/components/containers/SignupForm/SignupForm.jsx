@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import request from "../../utils/request";
 import '../../styles/auth.css'
-import { Link } from "react-router-dom";
 
 export default function SignupForm() {
 	const [emailInput, setEmailInput] = useState("");

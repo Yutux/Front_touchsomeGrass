@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -56,7 +56,7 @@ export default function UpdateSpotPage() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
   const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [mapRef, setMapRef] = useState<google.maps.Map | null>(null);
+  const [setMapRef] = useState<google.maps.Map | null>(null);
   const [searchBoxRef, setSearchBoxRef] = useState<google.maps.places.SearchBox | null>(null);
 
   // UI State
