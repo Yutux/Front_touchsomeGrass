@@ -14,7 +14,6 @@ import HikingSpotDetail from './components/pages/HikingSpot/HikingSpotDetail.jsx
 import HomeCarousel from './components/pages/Carrousel/HomeCarrousel.jsx';
 import NavBarCustom from './components/navBar/NavBarCustom.jsx';
 import Test from './components/pages/Test/Tester.jsx';
-import { GoogleMap, useLoadScript } from '@react-google-maps/api';
 import { useContext } from 'react';
 import { MantineProvider } from '@mantine/core';
 import AdminDashboard from './components/pages/Admin/AdminDashboard';
@@ -24,7 +23,6 @@ import UpdateSpotPage from './components/pages/Spot/UpdateSpotPage';
 import ProfileUser from './components/containers/ProfileUser/ProfileUser';
 import SearchPage from './components/search/SearchPage';
 import CreateSpotPage from './components/pages/Spot/CreateSpotPage';
-import CreateHikingSpotPage from './components/pages/HikingSpot/CreateHikingSpotPage';
 import TrajetMap from './components/Map/TrajetMap';
 
 
