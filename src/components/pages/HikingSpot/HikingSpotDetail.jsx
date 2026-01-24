@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Divider,
-  Avatar,
   Paper,
   CircularProgress,
   Alert,

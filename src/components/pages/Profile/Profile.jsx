@@ -1,8 +1,8 @@
 // src/pages/Profile.jsx
-import React, { useState } from "react";
-import { Helmet } from "react-helmet";
-import ProfileUser from "../../containers/ProfileUser/ProfileUser";
-import Updatable from "../../containers/Updating/Updating";
+import { useState } from "react";
+// import { Helmet } from "react-helmet";
+// import ProfileUser from "../../containers/ProfileUser/ProfileUser";
+// import Updatable from "../../containers/Updating/Updating";
 
 // OPTION A (recommandée): image dans /public/images/profile-bg.jpg
 const PUBLIC_BG = "/images/profile-bg.jpg";

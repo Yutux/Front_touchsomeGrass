@@ -3,8 +3,6 @@
  * Affiche une grille responsive d’images Google Maps
  * avec support du clic pour ouvrir la modale.
  */
-
-import React from "react";
 import { Box, Typography } from "@mui/material";
 
 interface Props {

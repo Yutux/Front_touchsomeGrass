@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   GoogleMap,
   Marker,
@@ -7,7 +7,6 @@ import {
 import {
   Box,
   Paper,
-  Typography,
 } from "@mui/material";
 import RouteSummary from "./RouteSummary";
 import WaypointList from "./WaypointList";

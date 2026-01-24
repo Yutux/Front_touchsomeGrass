@@ -1,5 +1,5 @@
 // src/components/navBar/NavBarCustom.jsx
-import React, { useEffect, useMemo, useState, useContext, Fragment } from "react";
+import { useEffect, useMemo, useState, useContext, Fragment } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,

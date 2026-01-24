@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import request from "../../utils/request";
 import {
   ThemeProvider,
@@ -29,7 +29,6 @@ import {
   Switch,
   FormControlLabel,
   Alert,
-  CircularProgress,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import TerrainIcon from "@mui/icons-material/Terrain";

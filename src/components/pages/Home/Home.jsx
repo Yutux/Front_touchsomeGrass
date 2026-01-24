@@ -145,7 +145,7 @@ export default function Home() {
   )
 }
 */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Plx from 'react-plx';
 import { Link } from 'react-router-dom';
 import Helmet from 'react-helmet';

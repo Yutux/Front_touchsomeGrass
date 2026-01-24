@@ -1,7 +1,6 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   GoogleMap,
-  LoadScript,
   Marker,
   StandaloneSearchBox,
 } from "@react-google-maps/api";
@@ -13,12 +12,10 @@ import {
   Divider,
   TextField,
   Grid,
-  Modal,
-  IconButton,
   Button,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { motion, AnimatePresence } from "framer-motion";
+//import CloseIcon from "@mui/icons-material/Close";
+//import { motion, AnimatePresence } from "framer-motion";
 
 // 🔹 Import des sous-composants
 import PhotoGrid from "./PhotoGrid";

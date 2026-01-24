@@ -3,7 +3,6 @@
  * Bouton d’action flottant (MUI SpeedDial) pour recalculer, réinitialiser ou enregistrer un parcours.
  */
 
-import React from "react";
 import { SpeedDial, SpeedDialAction } from "@mui/material";
 import RouteIcon from "@mui/icons-material/AltRoute";
 import ReplayIcon from "@mui/icons-material/Replay";

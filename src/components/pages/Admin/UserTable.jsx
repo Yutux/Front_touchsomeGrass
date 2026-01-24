@@ -1,4 +1,3 @@
-import React from "react";
 import { Table, TableHead, TableRow, TableCell, TableBody, Button, Typography } from "@mui/material";
 
 export default function UserTable() {

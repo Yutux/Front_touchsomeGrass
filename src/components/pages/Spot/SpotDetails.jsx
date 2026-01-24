@@ -9,7 +9,6 @@ import {
   Alert,
   Card,
   CardMedia,
-  CardContent,
   IconButton,
 } from "@mui/material";
 import { GoogleMap, Marker, LoadScript } from "@react-google-maps/api";

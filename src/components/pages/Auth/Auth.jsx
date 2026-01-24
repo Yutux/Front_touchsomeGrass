@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../../styles/auth.css'
 import SignupForm from '../../containers/SignupForm/SignupForm';
 import LoginForm from '../../containers/LoginForm/LoginForm';

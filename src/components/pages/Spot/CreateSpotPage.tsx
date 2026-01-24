@@ -1,4 +1,4 @@
-import React from "react";
+
 import GoogleMapSearch from "../../Map/GoogleMapSearch";
 import { PlaceData } from "../../../types/place";
 
