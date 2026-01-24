@@ -29,7 +29,7 @@ import { reverseGeocode } from "../utils/googleHelpers";
 import MapContainer from "./MapContainer";
 
 const center = { lat: 48.8566, lng: 2.3522 }; // Paris
-const GOOGLE_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
+//const GOOGLE_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
 
 export default function GoogleMapSearch({
   onPlaceSelected,

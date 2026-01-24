@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import request from "../../utils/request";
 import '../../styles/auth.css'
+import { Link } from "react-router-dom";
 
 export default function SignupForm() {
 	const [emailInput, setEmailInput] = useState("");
@@ -36,13 +37,13 @@ export default function SignupForm() {
 			<form>
 			<h1>Create Account</h1>
         	<div className="social-container">
-          		<a href="#" className="social">
+          		<a href="/login" className="social">
             		<i className="fab fa-facebook-f black" />
           		</a>
-				<a href="#" className="social">
+				<a href="/login" className="social">
 					<i className="fab fa-google-plus-g" />
 				</a>
-				<a href="#" className="social">
+				<a href="/login" className="social">
 					<i className="fab fa-linkedin-in" />
 				</a>
 				</div>

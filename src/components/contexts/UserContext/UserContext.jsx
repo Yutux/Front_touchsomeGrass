@@ -3,7 +3,7 @@ export const UserContext = createContext();
 export default function UserProvider({ children }) {
   // ✅ Initialise directement avec localStorage
   const [token, setToken] = useState(() => localStorage.getItem("token"));
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   // 🔄 Synchronise quand le token change
   useEffect(() => {
     if (token) {

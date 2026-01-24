@@ -37,7 +37,7 @@ import {
   Shield as ShieldIcon,
   Favorite as FavoriteIcon,
   Place as PlaceIcon,
-  CheckCircle as CheckIcon,
+  //CheckCircle as CheckIcon,
 } from "@mui/icons-material";
 
 /* utils */

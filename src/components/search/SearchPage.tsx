@@ -84,9 +84,6 @@ const SearchPage = () => {
   const handleSearch = async (page = 0) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      
-      
       const params: SearchParams = {
         query: query || undefined,
         latitude: userLocation?.lat,
@@ -113,12 +110,6 @@ const SearchPage = () => {
       const endpoint = searchType === 'spots' 
         ? `${API_URL}/spots/search` 
         : `${API_URL}/hikingspot/search`;
-
-      // 🔥 Headers conditionnels (avec ou sans token)
-      const headers: any = {
-        'Content-Type': 'application/json',
-      };
-
     
       const response = await axios.post(endpoint, params);
 
