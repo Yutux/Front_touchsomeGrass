@@ -56,9 +56,9 @@ export default function UpdateSpotPage() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
   const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [setMapRef] = useState<google.maps.Map | null>(null);
+  const [mapRef, setMapRef] = useState<google.maps.Map | null>(null);
+  mapRef;
   const [searchBoxRef, setSearchBoxRef] = useState<google.maps.places.SearchBox | null>(null);
-
   // UI State
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" | "info" }>({
