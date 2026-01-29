@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Plx from 'react-plx';
 import { Link } from 'react-router-dom';
 import Helmet from 'react-helmet';
-import HomeCarousel from '../Carrousel/HomeCarrousel';
+//import HomeCarousel from '../Carrousel/HomeCarrousel';
 
 export default function Home() {
   const [showNavbar, setShowNavbar] = useState(false);

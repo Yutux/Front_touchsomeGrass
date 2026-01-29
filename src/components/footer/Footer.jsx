@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 
 const Footer = () => {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const isDesktop = useMediaQuery('(min-width:900px)');
   const isMobile = !isDesktop;
