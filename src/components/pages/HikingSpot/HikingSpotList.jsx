@@ -849,6 +849,9 @@ function HikingSpotListContent() {
         backgroundColor: "background.default",
         py: { xs: 1.5, sm: 2.5, md: 3 },
         pb: { xs: 9, sm: 4 },
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <FilterPanel

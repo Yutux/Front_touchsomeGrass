@@ -49,3 +49,50 @@
   object-fit: cover;
   border-radius: 10px;
 }
+
+/* ============================================
+   FOOTER FIX - Styles ajoutés pour corriger 
+   le positionnement du footer en bas de page
+   ============================================ */
+
+/* Reset de base pour éviter les conflits */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* S'assurer que #root prend toute la hauteur */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pour les conteneurs de contenu qui pourraient être trop petits */
+.page-content,
+.container,
+main {
+  flex-grow: 1;
+}
+
+/* Transitions douces pour le footer */
+footer {
+  transition: all 0.3s ease;
+}
+
+/* Gestion responsive */
+@media (max-width: 899px) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* Si vous utilisez Material-UI Container */
+.MuiContainer-root {
+  flex-grow: 1;
+}
