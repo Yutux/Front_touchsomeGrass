@@ -28,12 +28,12 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useNavigate } from "react-router-dom";
 
 const LIST_URL =
-  process.env.REACT_APP_SPOTS_LIST_URL ||
+import.meta.env.VITE_API_SPOTS_LIST_URL||
   "http://localhost:8088/AUTH-SERVICE/api/v1/spots/get/all";
 
 const DELETE_URL = (id) => {
   const tpl =
-    process.env.REACT_APP_SPOT_DELETE_URL_TEMPLATE ||
+import.meta.env.VITE_API_SPOT_DELETE_URL_TEMPLATE ||
     "http://localhost:8088/AUTH-SERVICE/api/v1/spots/delete/{id}";
   return tpl.replace("{id}", id);
 };

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import Plx from 'react-plx';
 import { Link } from 'react-router-dom';
-import Helmet from 'react-helmet';
+import {Helmet} from 'react-helmet-async';
+import bg from '../../styles/bg.png';
+import background from '../../styles/background.jpg';
+
 //import HomeCarousel from '../Carrousel/HomeCarrousel';
 
 export default function Home() {
@@ -66,14 +69,14 @@ export default function Home() {
         parallaxData={[{ start: 0, end: 900, easing: "ease-in", properties: [{ startValue: 1, endValue: 2, property: "scale" }] }]}
         style={{ position: "fixed", left: 0, top: 0, width: "100%", zIndex: 100 }}
       >
-        <img style={{ width: "100%" }} src={require('../../styles/bg.png')} alt="foreground" />
+        <img style={{ width: "100%" }} src={bg} alt="foreground" />
       </Plx>
 
       <Plx
         parallaxData={[{ start: 0, end: 800, properties: [{ startValue: 1, endValue: 1.18, property: "scale" }] }]}
         style={{ position: "fixed", left: 0, top: 0, width: "100%" }}
       >
-        <img style={{ width: "100%" }} src={require('../../styles/background.jpg')} alt="background" />
+        <img style={{ width: "100%" }} src={background} alt="background" />
       </Plx>
 
       {/* Texte qui disparaît avec le scroll */}

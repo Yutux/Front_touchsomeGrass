@@ -27,8 +27,7 @@ import UserDetails from './components/containers/ProfileUser/UserDetails';
 import SearchPage from './components/search/SearchPage';
 import TrajetMap from './components/Map/TrajetMap';
 import HomeCarousel from './components/pages/Carrousel/HomeCarrousel';
-import SpotCreator from './components/containers/searchMaps/SpotCreator';
-import Test from './components/pages/Test/Tester';
+
 
 function Layout() {
   const location = useLocation();
@@ -81,9 +80,9 @@ function Layout() {
             <Route path="/user/:id" element={<UserDetails />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/CreateHikingSpots" element={<TrajetMap />} />
-            <Route path="/carousel" element={<HomeCarousel />} />
-            <Route path="/testcreate" element={<SpotCreator />} />
-            <Route path="/test" element={<Test />} />
+            
+            
+          
 
             {/* Pages légales */}
             <Route path="/about" element={<Page text="À propos" />} />
