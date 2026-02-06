@@ -1,4 +1,3 @@
-// src/components/navBar/NavBarCustom.jsx
 import { useEffect, useMemo, useState, useContext, Fragment } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -36,9 +35,15 @@ import {
   Place,
   Hiking,
   Close as CloseIcon,
+  People as PeopleIcon,
+  Groups as GroupsIcon,
+  Favorite as FavoriteIcon,
+  Chat as ChatIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { UserContext } from "../contexts/UserContext/UserContext";
+import { useNotifications } from "../contexts/NotificationsContext/NotificationsContext";
+import useChat from "../../hooks/useChat";
 
 const NAV_WIDTH_COLLAPSED = 72;
 const NAV_WIDTH_EXPANDED = 232;
@@ -60,6 +65,7 @@ function decodeJwt(token) {
     return null;
   }
 }
+
 function extractRolesFromJwt(payload) {
   if (!payload) return [];
   const out = new Set();
@@ -82,6 +88,8 @@ export default function NavbarCustom() {
   const isMobile = !isDesktop;
 
   const { token, setToken, user } = useContext(UserContext) || {};
+  const { unreadCount: notificationUnreadCount } = useNotifications(); // 🔥 Invitations
+  const { unreadCount: chatUnreadCount } = useChat(); // 🔥 Messages
 
   /* --- auth & rôles --- */
   const jwtPayload = useMemo(() => decodeJwt(token), [token]);
@@ -91,24 +99,30 @@ export default function NavbarCustom() {
     : []
   ).map((r) => String(r).toUpperCase());
   const roles = rolesFromCtx.length ? rolesFromCtx : rolesFromJwt;
-  const isAuthenticated = !!token;
+  
+  const isAuthenticated = useMemo(() => {
+    if (!token) return false;
+    const payload = decodeJwt(token);
+    if (!payload || !payload.exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp > now;
+  }, [token]);
+
   const isAdmin = roles.some((r) => r.includes("ADMIN"));
 
   /* --- état desktop --- */
   const [open, setOpen] = useState(() => {
     const saved = localStorage.getItem("nav_open");
-    // par défaut: ouverte en desktop, fermée en mobile
     return saved ? JSON.parse(saved) : isDesktop;
   });
 
   /* --- état mobile --- */
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const pathsForBottom = ["/", "/search", "/allspot", "/allhikingspot"];
+  const pathsForBottom = ["/", "/search", "/spots", "/hikingSpots"];
   const pathIndex = Math.max(0, pathsForBottom.indexOf(location.pathname));
   const [mobileTab, setMobileTab] = useState(pathIndex);
 
   useEffect(() => {
-    // synchronise le tab lorsque la route change (via liens ailleurs)
     const idx = pathsForBottom.indexOf(location.pathname);
     setMobileTab(idx >= 0 ? idx : 0);
   }, [location.pathname]); // eslint-disable-line
@@ -120,14 +134,12 @@ export default function NavbarCustom() {
       document.documentElement.style.setProperty("--nav-w", w);
       document.documentElement.style.setProperty("--bn-h", "0px");
     } else {
-      // mobile: sidebar n'occupe pas la largeur, et bottom nav a une hauteur utile
       document.documentElement.style.setProperty("--nav-w", "0px");
       const h = `calc(72px + env(safe-area-inset-bottom, 0px))`;
       document.documentElement.style.setProperty("--bn-h", h);
     }
   }, [isDesktop, open]);
 
-  // persiste l'état d'ouverture en desktop uniquement
   useEffect(() => {
     if (isDesktop) localStorage.setItem("nav_open", JSON.stringify(open));
   }, [open, isDesktop]);
@@ -144,16 +156,35 @@ export default function NavbarCustom() {
   };
   const handleLogin = () => navigate("/login");
 
+  // 🔥 NAVIGATION AVEC 2 BADGES
   const baseNav = [
     { label: "Accueil", icon: <Home fontSize="small" />, path: "/", auth: false },
     { label: "Recherche", icon: <Search fontSize="small" />, path: "/search", auth: false },
     { label: "Tous les spots", icon: <Place fontSize="small" />, path: "/spots", auth: false },
     { label: "Randonnées", icon: <Hiking fontSize="small" />, path: "/hikingSpots", auth: false },
+    { label: "Utilisateurs", icon: <PeopleIcon fontSize="small" />, path: "/users", auth: false },
+    { divider: true, authRequired: true },
+    // 🔥 Section Social
     { label: "Profil", icon: <Person fontSize="small" />, path: "/profile", auth: true },
+    { label: "Mes Favoris", icon: <FavoriteIcon fontSize="small" />, path: "/favorites", auth: true },
+    { label: "Mes Amis", icon: <PeopleIcon fontSize="small" />, path: "/friends", auth: true },
+    { label: "Groupes", icon: <GroupsIcon fontSize="small" />, path: "/groups", auth: true },
+    // 🔥 MESSAGES (badge chat)
+    {
+      label: "Messages",
+      icon: (
+        <Badge badgeContent={chatUnreadCount} max={99} color="error">
+          <ChatIcon fontSize="small" />
+        </Badge>
+      ),
+      path: "/chat",
+      auth: true,
+    },
+    // 🔥 NOTIFICATIONS (badge invitations)
     {
       label: "Notifications",
       icon: (
-        <Badge badgeContent={3} max={99} color="error">
+        <Badge badgeContent={notificationUnreadCount} max={99} color="error">
           <Notifications fontSize="small" />
         </Badge>
       ),
@@ -162,14 +193,31 @@ export default function NavbarCustom() {
     },
     { label: "Paramètres", icon: <Settings fontSize="small" />, path: "/settings", auth: true },
   ];
+
   const adminNav = [
-    { label: "Admin • Dashboard", icon: <Dashboard fontSize="small" />, path: "/admin" },
+    { label: "Admin • Dashboard", icon: <Dashboard fontSize="small" />, path: "/AdminDashboard" },
     { label: "Admin • Utilisateurs", icon: <Group fontSize="small" />, path: "/admin/users" },
   ];
-  const visibleBaseNav = baseNav.filter((i) => (i.auth ? isAuthenticated : true));
-  const visibleAdminNav = isAdmin ? adminNav : [];
+
+  const visibleBaseNav = baseNav.filter((i) => {
+    if (i.divider) return i.authRequired ? isAuthenticated : true;
+    return i.auth ? isAuthenticated : true;
+  });
+
+  const visibleAdminNav = isAuthenticated && isAdmin ? adminNav : [];
 
   const renderItem = (item) => {
+    if (item.divider) {
+      return open ? (
+        <Divider 
+          key="social-divider" 
+          sx={{ my: 1, borderColor: "rgba(255,255,255,0.08)" }} 
+        />
+      ) : (
+        <Box key="social-divider" sx={{ height: 16 }} />
+      );
+    }
+
     const isActive = activePath === item.path;
     const content = (
       <ListItemButton
@@ -252,8 +300,29 @@ export default function NavbarCustom() {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" sx={{ flex: 1 }}>
-              Immoversive
+              TouchSomeGrass
             </Typography>
+            
+            {/* 🔥 BADGES MOBILES */}
+            {isAuthenticated && (
+              <>
+                {/* Badge Messages */}
+                <IconButton onClick={() => navigate("/chat")} sx={{ color: "#fff" }}>
+                  <Badge badgeContent={chatUnreadCount} max={99} color="error">
+                    <ChatIcon />
+                  </Badge>
+                </IconButton>
+
+                {/* Badge Notifications */}
+                <IconButton onClick={() => navigate("/notifications")} sx={{ color: "#fff" }}>
+                  <Badge badgeContent={notificationUnreadCount} max={99} color="error">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
+              </>
+            )}
+
+            {/* Bouton Login/Logout */}
             <IconButton
               onClick={isAuthenticated ? handleLogout : handleLogin}
               sx={{ color: isAuthenticated ? "#f44336" : "#00bcd4" }}
@@ -263,7 +332,7 @@ export default function NavbarCustom() {
             </IconButton>
           </Toolbar>
         </AppBar>
-        <Toolbar /> {/* pousse le contenu sous l'AppBar */}
+        <Toolbar />
 
         {/* Drawer mobile */}
         <Drawer
@@ -279,7 +348,7 @@ export default function NavbarCustom() {
               </IconButton>
             </Box>
 
-            {isAdmin && (
+            {isAuthenticated && isAdmin && (
               <Box
                 sx={{
                   display: "flex",
@@ -300,6 +369,13 @@ export default function NavbarCustom() {
             )}
 
             <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", mb: 1 }} />
+            
+            {isAuthenticated && (
+              <Box sx={{ px: 1, py: 0.5, fontSize: 11, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.6 }}>
+                Social
+              </Box>
+            )}
+            
             <List disablePadding sx={{ px: 0.5 }}>
               {visibleBaseNav.map(renderItem)}
             </List>
@@ -324,7 +400,6 @@ export default function NavbarCustom() {
             bottom: 0,
             left: 0,
             right: 0,
-            // assure une bonne zone tactile + prise en charge iPhone
             pb: "env(safe-area-inset-bottom, 0px)",
             zIndex: 1300,
           }}
@@ -382,7 +457,7 @@ export default function NavbarCustom() {
           {open ? <ChevronLeft /> : <MenuIcon />}
         </IconButton>
 
-        {open && isAdmin && (
+        {open && isAuthenticated && isAdmin && (
           <Box
             sx={{
               display: "flex",
@@ -443,19 +518,30 @@ export default function NavbarCustom() {
           <List disablePadding sx={{ px: 0.5 }}>
             <ListItemButton
               onClick={isAuthenticated ? handleLogout : handleLogin}
-              sx={{ borderRadius: 1.5, px: 1.25, py: 1, "&:hover": { bgcolor: "rgba(255,255,255,0.06)" } }}
+              sx={{ 
+                borderRadius: 1.5, 
+                px: 1.25, 
+                py: 1, 
+                "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
+                color: isAuthenticated ? "#f44336" : "#00bcd4",
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 0, mr: 1.25, justifyContent: "center" }}>
+              <ListItemIcon sx={{ 
+                minWidth: 0, 
+                mr: 1.25, 
+                justifyContent: "center",
+                color: isAuthenticated ? "#f44336" : "#00bcd4",
+              }}>
                 {isAuthenticated ? <Logout /> : <Login />}
               </ListItemIcon>
               <ListItemText
-                primary={isAuthenticated ? "Logout" : "Login"}
+                primary={isAuthenticated ? "Déconnexion" : "Connexion"}
                 primaryTypographyProps={{ fontSize: 14, fontWeight: 500 }}
               />
             </ListItemButton>
           </List>
         ) : (
-          <Tooltip title={isAuthenticated ? "Logout" : "Login"} placement="right" arrow>
+          <Tooltip title={isAuthenticated ? "Déconnexion" : "Connexion"} placement="right" arrow>
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <IconButton
                 onClick={isAuthenticated ? handleLogout : handleLogin}

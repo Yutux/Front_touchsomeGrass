@@ -1,4 +1,4 @@
-export default async function request(url, method, data = {}, auth = false) {
+/*export default async function request(url, method, data = {}, auth = false) {
   const headers = {
     "Content-Type": "application/json",
     "Accept": "application/json",
@@ -18,4 +18,41 @@ export default async function request(url, method, data = {}, auth = false) {
   });
 
   return { data: await response.json(), status: response.status };
+}
+*/
+export default async function request(url, method, data = null, auth = false) {
+  const headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+  };
+
+  if (auth) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  const options = {
+    method,
+    headers,
+  };
+
+  if (method !== "GET" && data !== null) {
+    options.body = JSON.stringify(data);
+  }
+
+  const response = await fetch(url, options);
+
+  let responseData = null;
+  const contentType = response.headers.get("content-type");
+
+  if (contentType && contentType.includes("application/json")) {
+    responseData = await response.json();
+  }
+
+  return {
+    status: response.status,
+    data: responseData,
+  };
 }

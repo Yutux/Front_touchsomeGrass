@@ -91,7 +91,7 @@ export default function UpdateHikingSpotPage() {
   useEffect(() => {
     const fetchSpot = async () => {
       try {
-        const res = await fetch(`http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/get/${id}`);
+        const res = await fetch(`http://localhost:8088 /api/v1/hikingspot/get/${id}`);
         const data = await res.json();
         if (data?.newHikingSpot) {
           const hs = data.newHikingSpot;
@@ -343,7 +343,7 @@ export default function UpdateHikingSpotPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/update/${id}`, {
+      const res = await fetch(`http://localhost:8088 /api/v1/hikingspot/update/${id}`, {
         method: "PUT",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,

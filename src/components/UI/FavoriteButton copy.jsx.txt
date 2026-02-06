@@ -1,0 +1,111 @@
+// src/components/UI/FavoriteButton.jsx
+import React, { useState, useEffect, useContext } from 'react';
+import { IconButton, Tooltip, CircularProgress } from '@mui/material';
+import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '@mui/icons-material';
+import { UserContext } from '../../contexts/UserContext/UserContext';
+import request from '../../utils/request';
+
+/**
+ * Bouton pour ajouter/retirer un spot ou hiking spot des favoris
+ * 
+ * @param {Object} props
+ * @param {number} props.spotId - ID du spot
+ * @param {'spot'|'hiking'} props.type - Type de spot (spot ou hiking)
+ * @param {boolean} props.initialIsFavorite - État initial (optionnel)
+ * @param {Function} props.onToggle - Callback après toggle (optionnel)
+ */
+export default function FavoriteButton({ 
+  spotId, 
+  type = 'spot', 
+  initialIsFavorite = false,
+  onToggle,
+  size = 'medium',
+  color = 'error'
+}) {
+  const { token } = useContext(UserContext);
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  // Récupérer l'ID utilisateur
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await request(
+          "http://localhost:8088/api/v1/auth/user",
+          "GET",
+          null,
+          true
+        );
+        if (res.status === 200 && res.data?.userApp) {
+          setUserId(res.data.userApp.id);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération de l'utilisateur:", error);
+      }
+    };
+
+    fetchUser();
+  }, [token]);
+
+  const handleToggleFavorite = async (e) => {
+    e.preventDefault(); // Empêche la navigation si dans un Link
+    e.stopPropagation(); // Empêche la propagation de l'événement
+
+    if (!token || !userId) {
+      alert("Vous devez être connecté pour ajouter des favoris");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const endpoint = type === 'hiking'
+        ? `http://localhost:8088/api/v1/user-relations/${userId}/favorites/hiking-spots/${spotId}`
+        : `http://localhost:8088/api/v1/user-relations/${userId}/favorites/spots/${spotId}`;
+
+      const method = isFavorite ? 'DELETE' : 'POST';
+
+      const response = await request(endpoint, method, null, true);
+
+      if (response.status === 200) {
+        setIsFavorite(!isFavorite);
+        onToggle?.(!isFavorite); // Callback optionnel
+      }
+    } catch (error) {
+      console.error("Erreur lors de la modification des favoris:", error);
+      alert("Une erreur est survenue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!token) return null; // Ne pas afficher si non connecté
+
+  return (
+    <Tooltip title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}>
+      <IconButton 
+        onClick={handleToggleFavorite}
+        disabled={loading}
+        color={color}
+        size={size}
+        sx={{
+          transition: 'transform 0.2s',
+          '&:hover': {
+            transform: 'scale(1.1)',
+          },
+        }}
+      >
+        {loading ? (
+          <CircularProgress size={size === 'small' ? 20 : 24} color={color} />
+        ) : isFavorite ? (
+          <FavoriteIcon />
+        ) : (
+          <FavoriteBorderIcon />
+        )}
+      </IconButton>
+    </Tooltip>
+  );
+}

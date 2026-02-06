@@ -22,7 +22,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8088/AUTH-SERVICE/api/v1';
+const API_URL = 'http://localhost:8088/api/v1';
 
 interface SearchParams {
   query?: string;

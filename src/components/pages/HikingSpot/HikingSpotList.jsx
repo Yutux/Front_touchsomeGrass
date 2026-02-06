@@ -41,6 +41,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import SortIcon from "@mui/icons-material/Sort";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import TuneIcon from "@mui/icons-material/Tune";
+import FavoriteButton from "../../UI/FavoriteButton";
 
 /* --- thème --- */
 const theme = createTheme({
@@ -68,7 +69,7 @@ function SpotCard({ spot }) {
     spot?.imagePath && (spot.imagePath.startsWith("http") || spot.imagePath.startsWith("https"))
       ? spot.imagePath
       : spot?.imagePath
-      ? `http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${spot.imagePath}`
+      ? `http://localhost:8088/api/v1/uploads/${spot.imagePath}`
       : (spot?.imageUrls && spot.imageUrls[0]) || "/images/no-image.png";
 
   const distance = typeof spot?.distance === "number" ? spot.distance : null;
@@ -107,6 +108,18 @@ function SpotCard({ spot }) {
           }}
           sx={{ height: IMG_H, objectFit: "cover" }}
         />
+        
+        {/* 🔥 BOUTON FAVORIS - En haut à droite */}
+        <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
+          <FavoriteButton 
+            spotId={spot.id} 
+            type="hiking" 
+            size="small"
+            color="error"
+          />
+        </Box>
+
+        {/* Chip difficulté - En haut à gauche */}
         {spot?.name && (
           <Chip
             icon={<TerrainIcon />}
@@ -118,6 +131,7 @@ function SpotCard({ spot }) {
               left: 8,
               px: 0.75,
               height: 24,
+              zIndex: 1,
               backgroundColor:
                 (spot?.difficultyLevel ?? 0) < 3
                   ? "rgba(76,175,80,0.9)"
@@ -131,6 +145,7 @@ function SpotCard({ spot }) {
         )}
       </Box>
 
+      {/* ... Reste du code inchangé ... */}
       {Array.isArray(spot?.imageUrls) && spot.imageUrls.length > 1 ? (
         <Stack
           direction="row"
@@ -723,7 +738,7 @@ function HikingSpotListContent() {
   useEffect(() => {
     if (!advancedMode) {
       setLoading(true);
-      request("http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/get/all", "GET", {}, false)
+      request("http://localhost:8088/api/v1/hikingspot/get/all", "GET", {}, false)
         .then((response) => {
           if (response?.data?.hikingSpots) setHikingSpots(response.data.hikingSpots);
           else setHikingSpots([]);
@@ -757,7 +772,7 @@ function HikingSpotListContent() {
       console.log('🔍 Recherche avancée avec params:', params);
 
       const response = await request(
-        "http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/search",
+        "http://localhost:8088/api/v1/hikingspot/search",
         "POST",
         params,
         false

@@ -20,34 +20,36 @@ import {
   DialogActions,
   Button,
   Chip,
+  TextField,
+  InputAdornment,
+  Paper,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 
 const LIST_URL =
-import.meta.env.VITE_API_SPOTS_LIST_URL||
-  "http://localhost:8088/AUTH-SERVICE/api/v1/spots/get/all";
+  import.meta.env.VITE_API_SPOTS_LIST_URL ||
+  `${import.meta.env.VITE_API_BASE_URL}/api/v1/spots/get/all`;
 
 const DELETE_URL = (id) => {
   const tpl =
-import.meta.env.VITE_API_SPOT_DELETE_URL_TEMPLATE ||
-    "http://localhost:8088/AUTH-SERVICE/api/v1/spots/delete/{id}";
+    import.meta.env.VITE_API_SPOT_DELETE_URL_TEMPLATE ||
+    `${import.meta.env.VITE_API_BASE_URL}/api/v1/spots/delete/{id}`;
   return tpl.replace("{id}", id);
 };
 
 function normalizeRow(raw) {
-  // Champs renvoyés par ton SpotDto
   const latitude =
     raw.latitude ?? raw.lat ?? raw.Latitude ?? raw.Lat ?? raw.latitud ?? null;
   const longitude =
     raw.longitude ?? raw.lon ?? raw.lng ?? raw.Longitude ?? raw.lonx ?? null;
 
   const imageUrls = Array.isArray(raw.imageUrls) ? raw.imageUrls : [];
-  const imagesCount =
-    imageUrls.length + (raw.imagePath ? 1 : 0); // 1 pour l'image locale éventuelle
+  const imagesCount = imageUrls.length + (raw.imagePath ? 1 : 0);
 
   return {
     id: raw.id ?? raw._id ?? raw.uuid,
@@ -70,6 +72,7 @@ function descendingComparator(a, b, orderBy) {
   if (vb > va) return 1;
   return 0;
 }
+
 function getComparator(order, orderBy) {
   return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
@@ -87,13 +90,16 @@ export default function SpotTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // 🔍 Recherche
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [toDelete, setToDelete] = useState(null);
 
   const [snack, setSnack] = useState({ open: false, msg: "", severity: "info" });
 
-  // Fetch list (gère 200 + 204 No Content)
+  // Fetch list
   useEffect(() => {
     const ctrl = new AbortController();
     setLoading(true);
@@ -101,15 +107,11 @@ export default function SpotTable() {
 
     fetch(LIST_URL, { signal: ctrl.signal })
       .then(async (res) => {
-        if (res.status === 204) {
-          // No Content → liste vide
-          return { spots: [] };
-        }
+        if (res.status === 204) return { spots: [] };
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        // Ton contrôleur renvoie { message, spots: [...] }
         const list = Array.isArray(data?.spots) ? data.spots : [];
         const normalized = list.map(normalizeRow).filter((r) => !!r.id);
         setRows(normalized);
@@ -124,10 +126,26 @@ export default function SpotTable() {
     return () => ctrl.abort();
   }, []);
 
-  const sortedRows = useMemo(() => {
-    return [...rows].sort(getComparator(order, orderBy));
-  }, [rows, order, orderBy]);
+  // 🔍 Filtrer selon la recherche
+  const filteredRows = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return rows;
 
+    return rows.filter((row) => {
+      return (
+        row.name?.toLowerCase().includes(query) ||
+        row.description?.toLowerCase().includes(query) ||
+        row.creator?.toLowerCase().includes(query)
+      );
+    });
+  }, [rows, searchQuery]);
+
+  // Tri
+  const sortedRows = useMemo(() => {
+    return [...filteredRows].sort(getComparator(order, orderBy));
+  }, [filteredRows, order, orderBy]);
+
+  // Pagination
   const pagedRows = useMemo(() => {
     const start = page * rowsPerPage;
     return sortedRows.slice(start, start + rowsPerPage);
@@ -140,6 +158,7 @@ export default function SpotTable() {
   };
 
   const handleChangePage = (_e, newPage) => setPage(newPage);
+  
   const handleChangeRowsPerPage = (e) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
@@ -152,6 +171,7 @@ export default function SpotTable() {
     setToDelete(row);
     setConfirmOpen(true);
   };
+
   const closeDelete = () => {
     if (deleting) return;
     setConfirmOpen(false);
@@ -167,7 +187,7 @@ export default function SpotTable() {
       setRows((prev) => prev.filter((r) => r.id !== toDelete.id));
       setSnack({
         open: true,
-        msg: `“${toDelete.name}” supprimé.`,
+        msg: `"${toDelete.name}" supprimé.`,
         severity: "success",
       });
       closeDelete();
@@ -187,22 +207,61 @@ export default function SpotTable() {
     setOrderBy("name");
     setPage(0);
     setRowsPerPage(10);
+    setSearchQuery("");
   };
 
   return (
-    <Box>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h6">Gestion des Spots</Typography>
-        <Tooltip title="Réinitialiser tri/pagination">
-          <Button
+    <Paper elevation={2} sx={{ p: 3 }}>
+      {/* Header avec recherche */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={3}
+      >
+        <Typography variant="h5" fontWeight={600}>
+          Gestion des Spots
+        </Typography>
+
+        <Box display="flex" gap={2} alignItems="center">
+          <TextField
             size="small"
-            startIcon={<RestartAltIcon />}
-            onClick={resetSortPaginate}
-            variant="outlined"
-          >
-            Réinitialiser
-          </Button>
-        </Tooltip>
+            placeholder="Rechercher..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(0); // Reset à la page 1
+            }}
+            sx={{ width: 300 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Tooltip title="Réinitialiser tri/pagination/recherche">
+            <Button
+              size="small"
+              startIcon={<RestartAltIcon />}
+              onClick={resetSortPaginate}
+              variant="outlined"
+            >
+              Réinitialiser
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      {/* Stats */}
+      <Box mb={2}>
+        <Typography variant="body2" color="text.secondary">
+          {filteredRows.length === rows.length
+            ? `${rows.length} spot(s) au total`
+            : `${filteredRows.length} résultat(s) sur ${rows.length} spot(s)`}
+        </Typography>
       </Box>
 
       {/* Loading / Error / Empty states */}
@@ -212,13 +271,17 @@ export default function SpotTable() {
         </Box>
       ) : fetchError ? (
         <Alert severity="error">Erreur de chargement : {fetchError}</Alert>
-      ) : rows.length === 0 ? (
-        <Alert severity="info">Aucun spot pour le moment.</Alert>
+      ) : filteredRows.length === 0 ? (
+        <Alert severity="info">
+          {searchQuery
+            ? "Aucun résultat trouvé pour votre recherche"
+            : "Aucun spot pour le moment."}
+        </Alert>
       ) : (
         <>
           <Table size="small" stickyHeader>
             <TableHead>
-              <TableRow>
+              <TableRow sx={{ bgcolor: "grey.100" }}>
                 <TableCell sortDirection={orderBy === "name" ? order : false}>
                   <TableSortLabel
                     active={orderBy === "name"}
@@ -271,7 +334,14 @@ export default function SpotTable() {
 
             <TableBody>
               {pagedRows.map((row) => (
-                <TableRow key={row.id} hover>
+                <TableRow 
+                  key={row.id} 
+                  hover
+                  sx={{
+                    "&:hover": { bgcolor: "action.hover" },
+                    transition: "background-color 0.2s",
+                  }}
+                >
                   <TableCell>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Typography>{row.name}</Typography>
@@ -297,7 +367,7 @@ export default function SpotTable() {
                         size="small"
                         onClick={() => handleView(row.id)}
                       >
-                        <VisibilityIcon />
+                        <VisibilityIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Éditer">
@@ -306,7 +376,7 @@ export default function SpotTable() {
                         size="small"
                         onClick={() => handleEdit(row.id)}
                       >
-                        <EditIcon />
+                        <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Supprimer">
@@ -315,7 +385,7 @@ export default function SpotTable() {
                         size="small"
                         onClick={() => openDelete(row)}
                       >
-                        <DeleteIcon />
+                        <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </TableCell>
@@ -326,13 +396,21 @@ export default function SpotTable() {
 
           <TablePagination
             component="div"
-            count={rows.length}
+            count={filteredRows.length}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            labelRowsPerPage="Lignes par page"
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            labelRowsPerPage="Lignes par page:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} sur ${count !== -1 ? count : `plus de ${to}`}`
+            }
+            sx={{
+              borderTop: 1,
+              borderColor: "divider",
+              mt: 2,
+            }}
           />
         </>
       )}
@@ -368,17 +446,16 @@ export default function SpotTable() {
         open={snack.open}
         autoHideDuration={3000}
         onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={() => setSnack((s) => ({ ...s, open: false }))}
           severity={snack.severity}
           variant="filled"
-          sx={{ width: "100%" }}
         >
           {snack.msg}
         </Alert>
       </Snackbar>
-    </Box>
+    </Paper>
   );
 }

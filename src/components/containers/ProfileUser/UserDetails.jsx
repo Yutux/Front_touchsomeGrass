@@ -11,13 +11,14 @@ import {
   CircularProgress,
   Stack,
 } from "@mui/material";
+import AddFriendButton from "../../Social/AddFriendButton";
 
 const UserDetails = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8088/AUTH-SERVICE/api/v1/auth/user/get/${id}`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/user/get/${id}`)
       .then((response) => response.json())
       .then((data) => {
         setUser(data.userApp);
@@ -82,9 +83,11 @@ const UserDetails = () => {
             <Button variant="outlined" color="error">
               Envoyer un message
             </Button>
-            <Button variant="contained" color="error">
-              Ajouter en ami
-            </Button>
+            <AddFriendButton
+              targetUserId={parseInt(id)} 
+              variant="button"
+              size="medium"
+            />
           </CardActions>
         </Stack>
       </Card>

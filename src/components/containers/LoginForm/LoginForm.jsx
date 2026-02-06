@@ -14,7 +14,7 @@ export default function LoginForm() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    request(`http://localhost:8088/AUTH-SERVICE/api/v1/auth/authenticate`, 'POST', { 
+    request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/authenticate`, 'POST', { 
       email: emailInput, 
       password: passwordInput 
     }, false).then((response) => {

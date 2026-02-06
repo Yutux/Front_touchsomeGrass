@@ -12,7 +12,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function MapContainer({ children }: Props) {
   const { isLoaded, loadError } = useJsApiLoader({

@@ -21,7 +21,7 @@ export async function createSpot(spotData: PlaceData, files: File[]) {
 
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch("http://localhost:8088/AUTH-SERVICE/api/v1/spots/create", {
+  const res = await fetch("http://localhost:8088/api/v1/spots/create", {
     method: "POST",
     headers,
     body: formData,
@@ -35,5 +35,5 @@ export async function createSpot(spotData: PlaceData, files: File[]) {
  * Exemple d’utilisation de ta fonction request() pour les endpoints JSON
  */
 export async function getAllSpots() {
-  return await request("http://localhost:8088/AUTH-SERVICE/api/v1/spots/get/all", "GET", {}, true);
+  return await request("http://localhost:8088/api/v1/spots/get/all", "GET", null, true);
 }

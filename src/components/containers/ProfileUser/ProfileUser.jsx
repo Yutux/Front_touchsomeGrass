@@ -1,6 +1,5 @@
-// src/containers/ProfileUser/ProfileUser.jsx
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link as RouterLink } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext/UserContext";
 import request from "../../utils/request";
 import {
@@ -11,6 +10,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  CardMedia,
   Chip,
   CircularProgress,
   Divider,
@@ -26,6 +26,12 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  Alert,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListItemButton,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -36,8 +42,15 @@ import {
   WorkspacePremium as PremiumIcon,
   Shield as ShieldIcon,
   Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon,
   Place as PlaceIcon,
-  //CheckCircle as CheckIcon,
+  People as PeopleIcon,
+  Chat as ChatIcon,
+  Comment as CommentIcon,
+  Groups as GroupsIcon,
+  Terrain as TerrainIcon,
+  PersonAdd as PersonAddIcon,
+  Star as StarIcon,
 } from "@mui/icons-material";
 
 /* utils */
@@ -48,6 +61,7 @@ function fmtDate(d) {
     ? "—"
     : date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
+
 function getRoles(user) {
   if (!user) return [];
   if (Array.isArray(user.roles)) {
@@ -55,6 +69,17 @@ function getRoles(user) {
     return user.roles.map((r) => (typeof r === "string" ? r : r?.authority)).filter(Boolean);
   }
   return [];
+}
+
+// 🔥 Fonction pour générer la bonne URL d'image
+const GOOGLE_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
+function getImageUrl(imagePath) {
+  if (!imagePath) return "/images/no-image.png";
+  if (imagePath.length > 100 && !imagePath.includes('/') && !imagePath.includes('.')) {
+    return `https://maps.googleapis.com/maps/api/place/photo?photoreference=${imagePath}&maxwidth=400&key=${GOOGLE_API_KEY}`;
+  }
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
+  return `http://localhost:8088/api/v1/uploads/${imagePath}`;
 }
 
 /* assets */
@@ -73,28 +98,154 @@ export default function ProfileUser() {
   const [redirect, setRedirect] = useState(false);
   const [tab, setTab] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
+  
+  // 🔥 Nouveaux états pour les données sociales
+  const [socialData, setSocialData] = useState({
+    favoriteSpots: [],
+    favoriteHikingSpots: [],
+    friends: [],
+    groups: [],
+    comments: [],
+    unreadMessages: 0,
+    loading: true,
+  });
 
+  // Chargement du profil utilisateur
   useEffect(() => {
     if (!token) {
       setRedirect(true);
       return;
     }
+
     (async () => {
       try {
         const res = await request(
-          "http://localhost:8088/AUTH-SERVICE/api/v1/auth/user",
+          "http://localhost:8088/api/v1/auth/user",
           "GET",
-          {},
+          null,
           true
         );
-        if (res.status === 200 && res.data.userApp) setUser(res.data.userApp);
-        else setRedirect(true);
+
+        if (res.status === 200 && res.data?.userApp) {
+          setUser(res.data.userApp);
+        } else {
+          setRedirect(true);
+        }
       } catch (e) {
         console.error("Erreur profil :", e);
         setRedirect(true);
       }
     })();
   }, [token]);
+
+  // 🔥 Chargement des données sociales
+  useEffect(() => {
+    if (!user?.id || !token) return;
+
+    const fetchSocialData = async () => {
+      setSocialData(prev => ({ ...prev, loading: true }));
+      
+      try {
+        // ✅ Récupération parallèle de toutes les données
+        const [
+          favSpots,
+          favHikingSpots,
+          friends,
+          groups,
+          comments,
+          unreadCount,
+        ] = await Promise.allSettled([
+          request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/user-relations/favorites/spots`, "GET", null, true),
+          request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/user-relations/favorites/hiking-spots`, "GET", null, true),
+          request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/user-relations/friends`, "GET", null, true),
+          request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/groupSource/my-groups`, "GET", null, true),
+          request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/user-relations/comments`, "GET", null, true),
+          request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/user-relations/messages/unread/count`, "GET", null, true),
+        ]);
+
+        // 🔍 DEBUG : Voir les réponses dans la console
+        console.log("🔍 DEBUG ProfileUser - Réponses API:");
+        console.log("Favoris spots:", favSpots);
+        console.log("Favoris hiking:", favHikingSpots);
+        console.log("Amis:", friends);
+        console.log("Groupes:", groups);
+        console.log("Comments:", comments);
+        console.log("Unread:", unreadCount);
+
+        // ✅ Parser intelligemment : Gère List directe OU DTO
+        setSocialData({
+          // Favoris spots
+          favoriteSpots: favSpots.status === 'fulfilled' 
+            ? (Array.isArray(favSpots.value?.data) 
+                ? favSpots.value.data 
+                : favSpots.value?.data?.spots || favSpots.value?.data?.favoriteSpots || [])
+            : [],
+            
+          // Favoris hiking spots
+          favoriteHikingSpots: favHikingSpots.status === 'fulfilled' 
+            ? (Array.isArray(favHikingSpots.value?.data) 
+                ? favHikingSpots.value.data 
+                : favHikingSpots.value?.data?.hikingSpots || favHikingSpots.value?.data?.favoriteHikingSpots || [])
+            : [],
+            
+          // ✅ AMIS (FriendsListResponseDto)
+          friends: friends.status === 'fulfilled' 
+            ? (Array.isArray(friends.value?.data) 
+                ? friends.value.data 
+                : friends.value?.data?.friends || [])
+            : [],
+            
+          // ✅ GROUPES (GroupsListResponseDto)
+          groups: groups.status === 'fulfilled' 
+            ? (Array.isArray(groups.value?.data) 
+                ? groups.value.data 
+                : groups.value?.data?.groups || [])
+            : [],
+            
+          // Commentaires
+          comments: comments.status === 'fulfilled' 
+            ? (Array.isArray(comments.value?.data) 
+                ? comments.value.data 
+                : comments.value?.data?.comments || [])
+            : [],
+            
+          // Messages non lus
+          unreadMessages: unreadCount.status === 'fulfilled' 
+            ? (typeof unreadCount.value?.data === 'number'
+                ? unreadCount.value.data
+                : unreadCount.value?.data?.count || 0)
+            : 0,
+            
+          loading: false,
+        });
+
+        // ✅ Log final pour vérifier
+        console.log("✅ Données sociales chargées:", {
+          favoriteSpots: favSpots.status === 'fulfilled' 
+            ? (Array.isArray(favSpots.value?.data) 
+                ? favSpots.value.data.length 
+                : (favSpots.value?.data?.spots?.length || 0))
+            : 0,
+          friends: friends.status === 'fulfilled' 
+            ? (Array.isArray(friends.value?.data) 
+                ? friends.value.data.length 
+                : (friends.value?.data?.friends?.length || 0))
+            : 0,
+          groups: groups.status === 'fulfilled' 
+            ? (Array.isArray(groups.value?.data) 
+                ? groups.value.data.length 
+                : (groups.value?.data?.groups?.length || 0))
+            : 0,
+        });
+
+      } catch (error) {
+        console.error("❌ Erreur lors du chargement des données sociales:", error);
+        setSocialData(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchSocialData();
+  }, [user?.id, token]);
 
   const logOut = () => {
     localStorage.removeItem("token");
@@ -118,14 +269,18 @@ export default function ProfileUser() {
   const email = user.email || "—";
   const phone = user.phone || user.phoneNumber || "—";
   const createdAt = user.createdAt || user.created_at;
-
   const avatarSize = isXs ? 90 : 120;
+
+  // 🔥 Statistiques réelles
+  const totalFavorites = socialData.favoriteSpots.length + socialData.favoriteHikingSpots.length;
+  const totalFriends = socialData.friends.length;
+  const totalGroups = socialData.groups.length;
+  const totalComments = socialData.comments.length;
 
   return (
     <Box sx={{ bgcolor: (t) => (t.palette.mode === "dark" ? "#0b0d10" : "#f5f7fb"), py: 2 }}>
-      {/* Container centré, aucune dépendance à la page/side-nav */}
       <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 } }}>
-        {/* Header/cover contenu dans une Card (plus de chevauchement) */}
+        {/* Header/cover */}
         <Card sx={{ borderRadius: 3, overflow: "hidden", mb: 3, boxShadow: 3 }}>
           <Box
             sx={{
@@ -186,8 +341,8 @@ export default function ProfileUser() {
         {/* Corps */}
         <Grid container spacing={{ xs: 2, md: 3 }}>
           <Grid item xs={12} md={4}>
-            {/* Carte infos contact + stats */}
             <Stack spacing={2}>
+              {/* Carte infos contact */}
               <Card variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                   <Stack spacing={1.25}>
@@ -202,18 +357,40 @@ export default function ProfileUser() {
                 </CardContent>
               </Card>
 
+              {/* 🔥 Statistiques réelles */}
               <Card variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
-                  <Stack direction="row" justifyContent="space-between" textAlign="center">
-                    <Stat label="Randonnées" value="18" />
-                    <Stat label="Spots favoris" value="42" />
-                    <Stat label="Badges" value="5" />
-                  </Stack>
-                  <Divider sx={{ my: 1.5 }} />
-                  <Typography variant="caption" color="text.secondary">
-                    Complétion du profil
-                  </Typography>
-                  <LinearProgress sx={{ mt: 0.5, height: 8, borderRadius: 10 }} variant="determinate" value={80} />
+                  {socialData.loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : (
+                    <>
+                      <Stack direction="row" justifyContent="space-between" textAlign="center">
+                        <Stat label="Favoris" value={totalFavorites} icon={<FavoriteIcon color="error" fontSize="small" />} />
+                        <Stat label="Amis" value={totalFriends} icon={<PeopleIcon color="primary" fontSize="small" />} />
+                        <Stat label="Groupes" value={totalGroups} icon={<GroupsIcon color="success" fontSize="small" />} />
+                      </Stack>
+                      <Divider sx={{ my: 1.5 }} />
+                      <Stack direction="row" justifyContent="space-between" textAlign="center">
+                        <Stat label="Commentaires" value={totalComments} icon={<CommentIcon fontSize="small" />} />
+                        <Stat 
+                          label="Messages non lus" 
+                          value={socialData.unreadMessages} 
+                          icon={<ChatIcon color={socialData.unreadMessages > 0 ? "error" : "disabled"} fontSize="small" />} 
+                        />
+                      </Stack>
+                      <Divider sx={{ my: 1.5 }} />
+                      <Typography variant="caption" color="text.secondary">
+                        Complétion du profil
+                      </Typography>
+                      <LinearProgress 
+                        sx={{ mt: 0.5, height: 8, borderRadius: 10 }} 
+                        variant="determinate" 
+                        value={Math.min(100, 60 + (totalFavorites > 0 ? 10 : 0) + (totalFriends > 0 ? 10 : 0) + (totalGroups > 0 ? 10 : 0) + (totalComments > 0 ? 10 : 0))} 
+                      />
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </Stack>
@@ -232,11 +409,14 @@ export default function ProfileUser() {
                 sx={{ px: { xs: 0.5, sm: 1, md: 2 } }}
               >
                 <Tab label="À propos" />
-                <Tab label="Activité" />
+                <Tab label={`Favoris (${totalFavorites})`} />
+                <Tab label={`Amis (${totalFriends})`} />
+                <Tab label={`Groupes (${totalGroups})`} />
                 <Tab label="Sécurité" />
               </Tabs>
               <Divider />
 
+              {/* Tab 0: À propos */}
               {tab === 0 && (
                 <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography variant="h6" fontWeight={700} gutterBottom>
@@ -269,7 +449,7 @@ export default function ProfileUser() {
                             Bio
                           </Typography>
                           <Typography variant="body1">
-                            Passionné de nature et de cartographie. J’adore explorer de nouveaux sentiers et partager
+                            Passionné de nature et de cartographie. J'adore explorer de nouveaux sentiers et partager
                             des spots avec la communauté.
                           </Typography>
                         </CardContent>
@@ -282,49 +462,160 @@ export default function ProfileUser() {
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap">
                     <Chip icon={<PremiumIcon />} color="warning" label="Explorateur" />
-                    <Chip icon={<FavoriteIcon />} color="error" label="Top contributeur" />
+                    {totalComments > 5 && <Chip icon={<CommentIcon />} color="info" label="Commentateur actif" />}
+                    {totalFriends > 10 && <Chip icon={<PeopleIcon />} color="primary" label="Sociable" />}
+                    {totalFavorites > 20 && <Chip icon={<FavoriteIcon />} color="error" label="Collectionneur" />}
                     <Chip icon={<ShieldIcon />} color="success" label="Compte vérifié" />
                   </Stack>
                 </Box>
               )}
 
+              {/* 🔥 Tab 1: Favoris */}
               {tab === 1 && (
                 <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography variant="h6" fontWeight={700} gutterBottom>
-                    Activité récente
-                  </Typography>
-                  <Stack spacing={1.5}>
-                    {[
-                      { t: "Ajout d’un spot", d: "Forêt de Fontainebleau", date: "2025-10-12" },
-                      { t: "Nouvelle randonnée complétée", d: "Boucle de Meudon (12km)", date: "2025-10-08" },
-                      { t: "Spot ajouté aux favoris", d: "Parc des Buttes-Chaumont", date: "2025-10-03" },
-                    ].map((a, i) => (
-                      <Card key={i} variant="outlined" sx={{ borderRadius: 2 }}>
-                        <CardContent sx={{ py: { xs: 1, sm: 1.5 }, px: { xs: 1.5, sm: 2 } }}>
-                          <Stack
-                            direction={{ xs: "column", sm: "row" }}
-                            spacing={{ xs: 0.5, sm: 1 }}
-                            justifyContent="space-between"
-                            alignItems={{ xs: "flex-start", sm: "center" }}
-                          >
-                            <Box>
-                              <Typography variant="subtitle2">{a.t}</Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {a.d}
-                              </Typography>
-                            </Box>
-                            <Typography variant="caption" color="text.secondary">
-                              {fmtDate(a.date)}
-                            </Typography>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </Stack>
+                  {socialData.loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : totalFavorites === 0 ? (
+                    <Alert severity="info">Vous n'avez pas encore de spots favoris</Alert>
+                  ) : (
+                    <>
+                      {socialData.favoriteSpots.length > 0 && (
+                        <>
+                          <Typography variant="h6" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <PlaceIcon color="error" />
+                            Spots favoris ({socialData.favoriteSpots.length})
+                          </Typography>
+                          <Grid container spacing={2} sx={{ mb: 3 }}>
+                            {socialData.favoriteSpots.map((spot) => (
+                              <Grid item xs={12} sm={6} key={spot.id}>
+                                <FavoriteSpotCard spot={spot} type="spot" />
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </>
+                      )}
+                      
+                      {socialData.favoriteHikingSpots.length > 0 && (
+                        <>
+                          <Typography variant="h6" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <TerrainIcon color="success" />
+                            Randonnées favorites ({socialData.favoriteHikingSpots.length})
+                          </Typography>
+                          <Grid container spacing={2}>
+                            {socialData.favoriteHikingSpots.map((spot) => (
+                              <Grid item xs={12} sm={6} key={spot.id}>
+                                <FavoriteSpotCard spot={spot} type="hiking" />
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </>
+                      )}
+                    </>
+                  )}
                 </Box>
               )}
 
+              {/* 🔥 Tab 2: Amis */}
               {tab === 2 && (
+                <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+                  {socialData.loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : totalFriends === 0 ? (
+                    <Alert severity="info" action={
+                      <Button size="small" startIcon={<PersonAddIcon />}>
+                        Ajouter des amis
+                      </Button>
+                    }>
+                      Vous n'avez pas encore d'amis
+                    </Alert>
+                  ) : (
+                    <>
+                      <Typography variant="h6" fontWeight={700} gutterBottom>
+                        Mes amis ({totalFriends})
+                      </Typography>
+                      <List>
+                        {socialData.friends.map((friend) => (
+                          <ListItem 
+                            key={friend.id}
+                            secondaryAction={
+                              <Button size="small" variant="outlined">
+                                Voir profil
+                              </Button>
+                            }
+                          >
+                            <ListItemAvatar>
+                              <Avatar src={friend.avatar || DEFAULT_AVATAR}>
+                                {friend.firstname?.[0]}{friend.lastname?.[0]}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                              primary={`${friend.firstname || ''} ${friend.lastname || ''}`}
+                              secondary={friend.email}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </>
+                  )}
+                </Box>
+              )}
+
+              {/* 🔥 Tab 3: Groupes */}
+              {tab === 3 && (
+                <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+                  {socialData.loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : totalGroups === 0 ? (
+                    <Alert severity="info">Vous n'avez pas encore rejoint de groupes</Alert>
+                  ) : (
+                    <>
+                      <Typography variant="h6" fontWeight={700} gutterBottom>
+                        Mes groupes ({totalGroups})
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {socialData.groups.map((group) => (
+                          <Grid item xs={12} sm={6} key={group.id}>
+                            <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                              <CardContent>
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                                  <Avatar sx={{ bgcolor: 'primary.main' }}>
+                                    <GroupsIcon />
+                                  </Avatar>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography variant="subtitle1" fontWeight={600}>
+                                      {group.name}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {group.isPrivate ? '🔒 Privé' : '🌍 Public'}
+                                    </Typography>
+                                  </Box>
+                                </Stack>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                  {group.description || 'Pas de description'}
+                                </Typography>
+                                <Chip 
+                                  size="small" 
+                                  label={group.role || 'MEMBER'}
+                                  color={group.role === 'OWNER' ? 'error' : group.role === 'ADMIN' ? 'warning' : 'default'}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </>
+                  )}
+                </Box>
+              )}
+
+              {/* Tab 4: Sécurité */}
+              {tab === 4 && (
                 <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography variant="h6" fontWeight={700} gutterBottom>
                     Sécurité du compte
@@ -366,7 +657,7 @@ export default function ProfileUser() {
         </Grid>
       </Box>
 
-      {/* Modal d’édition */}
+      {/* Modal d'édition */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)}>
         <Box
           sx={{
@@ -419,6 +710,54 @@ export default function ProfileUser() {
   );
 }
 
+/* 🔥 Composant pour afficher un spot favori */
+function FavoriteSpotCard({ spot, type }) {
+  const mainImage = type === 'spot' 
+    ? getImageUrl(spot.imagePath || (spot.imageUrls && spot.imageUrls[0]))
+    : getImageUrl(spot.imagePath || (spot.imageUrls && spot.imageUrls[0]));
+
+  return (
+    <Card variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+      <CardMedia
+        component="img"
+        height="120"
+        image={mainImage}
+        alt={spot.name}
+        sx={{ objectFit: 'cover' }}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = "/images/no-image.png";
+        }}
+      />
+      <CardContent sx={{ p: 1.5 }}>
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          {spot.name}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          {spot.description?.substring(0, 80)}...
+        </Typography>
+        <Stack direction="row" spacing={0.5} flexWrap="wrap">
+          {spot.region && <Chip size="small" label={spot.region} />}
+          {spot.difficultyLevel && <Chip size="small" label={`Diff. ${spot.difficultyLevel}`} color="warning" />}
+          {spot.distance && <Chip size="small" label={`${spot.distance.toFixed(1)} km`} color="primary" />}
+        </Stack>
+      </CardContent>
+      <CardActions>
+        <Button 
+          size="small" 
+          component={RouterLink} 
+          to={type === 'spot' ? `/spot/${spot.id}` : `/HikingSpot/${spot.id}`}
+        >
+          Voir détails
+        </Button>
+        <IconButton size="small" color="error">
+          <FavoriteIcon fontSize="small" />
+        </IconButton>
+      </CardActions>
+    </Card>
+  );
+}
+
 /* helpers UI */
 function Row({ icon, text, breakAll }) {
   return (
@@ -430,14 +769,19 @@ function Row({ icon, text, breakAll }) {
     </Stack>
   );
 }
-function Stat({ label, value }) {
+
+function Stat({ label, value, icon }) {
   return (
     <Box sx={{ flex: 1 }}>
-      <Typography variant="h5" fontWeight={700}>{value}</Typography>
+      <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.5}>
+        {icon}
+        <Typography variant="h5" fontWeight={700}>{value}</Typography>
+      </Stack>
       <Typography variant="caption" color="text.secondary">{label}</Typography>
     </Box>
   );
 }
+
 function InfoCard({ title, value, breakAll }) {
   return (
     <Grid item xs={12} sm={6}>
@@ -460,6 +804,7 @@ function CloseIcon(props) {
     </svg>
   );
 }
+
 function CheckIconSmall() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

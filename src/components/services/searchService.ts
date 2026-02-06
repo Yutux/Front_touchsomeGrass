@@ -1,7 +1,7 @@
 // services/searchService.ts
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8088/AUTH-SERVICE/api/v1';
+const API_URL = 'http://localhost:8088/api/v1';
 
 export interface SearchParams {
   query?: string;

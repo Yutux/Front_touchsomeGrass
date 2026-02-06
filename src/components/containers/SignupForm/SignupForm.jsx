@@ -17,7 +17,7 @@ export default function SignupForm() {
 		if (passwordInput !== confirmPasswordInput) {
 			setSignupMessage("Les mots de passe ne correspondent pas");
 		} else {
-			request('http://localhost:8088/api/v1/auth/register', 'POST', {
+			request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/register`, 'POST', {
 				email: emailInput,
 				password: passwordInput,
 				firstname: pseudoInput,

@@ -14,8 +14,9 @@ import {
 import { GoogleMap, Marker, LoadScript } from "@react-google-maps/api";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import CommentSection from "../../Comments/CommentSection";
 
-const API_URL = "http://localhost:8088/AUTH-SERVICE/api/v1/spots/get";
+const API_URL = "http://localhost:8088/api/v1/spots/get";
 
 export default function SpotDetails() {
   const { id } = useParams();
@@ -59,7 +60,7 @@ export default function SpotDetails() {
 
   const images = [
     ...(spot.newSpot.imageUrls || []),
-    ...(spot.newSpot.imagePath ? [`http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${spot.newSpot.imagePath}`] : []),
+    ...(spot.newSpot.imagePath ? [`http://localhost:8088/api/v1/uploads/${spot.newSpot.imagePath}`] : []),
   ];
 
   const handleNextImage = () =>
@@ -75,13 +76,33 @@ export default function SpotDetails() {
         margin: "0 auto",
       }}
     >
-      {/* 🏷️ Titre principal */}
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        {spot.newSpot.name}
-      </Typography>
-      <Typography variant="subtitle2" color="text.secondary">
-        Créé par : {spot.creatorname || "Inconnu"}
-      </Typography>
+      {/* 🔥 NOUVEAU HEADER avec bouton favoris */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          justifyContent: 'space-between', 
+          mb: 2,
+          gap: 2
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            {spot.newSpot.name}
+          </Typography>
+          <Typography variant="subtitle2" color="text.secondary">
+            Créé par : {spot.creatorname || "Inconnu"}
+          </Typography>
+        </Box>
+
+        {/* 🔥 BOUTON FAVORIS - À côté du titre */}
+        <FavoriteButton 
+          spotId={id} 
+          type="spot"
+          size="large"
+          color="error"
+        />
+      </Box>
 
       <Divider sx={{ my: 2 }} />
 
@@ -107,10 +128,10 @@ export default function SpotDetails() {
                 objectFit: "cover",
               }}
               onError={(e) => {
-              if (e.target && e.target instanceof HTMLImageElement) {
-                e.target.src = "/images/no-image.png";
-              }
-            }}
+                if (e.target && e.target instanceof HTMLImageElement) {
+                  e.target.src = "/images/no-image.png";
+                }
+              }}
             />
           </Card>
 
@@ -207,11 +228,14 @@ export default function SpotDetails() {
           ℹ️ Informations supplémentaires
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Ce spot fait partie des zones d’exploration recensées dans notre base
+          Ce spot fait partie des zones d'exploration recensées dans notre base
           de données. Vous pourrez bientôt visualiser les points GPS exacts sur
           la carte interactive.
         </Typography>
       </Paper>
+
+      {/* 💬 Section commentaires */}
+      <CommentSection spotId={id} type="spot" />
     </Box>
   );
 }

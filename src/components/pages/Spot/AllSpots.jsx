@@ -37,6 +37,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import SortIcon from "@mui/icons-material/Sort";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import TuneIcon from "@mui/icons-material/Tune";
+import FavoriteButton from "../../UI/FavoriteButton";
 
 const theme = createTheme({
   palette: {
@@ -68,7 +69,7 @@ const getImageUrl = (imagePath) => {
     return imagePath;
   }
 
-  return `http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${imagePath}`;
+  return `http://localhost:8088/api/v1/uploads/${imagePath}`;
 };
 
 /* ------------------ Carte Spot ------------------ */
@@ -106,6 +107,17 @@ function SpotCard({ spot }) {
             e.currentTarget.src = "/images/no-image.png";
           }}
         />
+        
+        {/* 🔥 BOUTON FAVORIS - En haut à droite de l'image */}
+        <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
+          <FavoriteButton 
+            spotId={spot.id} 
+            type="spot"
+            size="small"
+            color="error"
+          />
+        </Box>
+
         {hasCoords && (
           <Chip
             icon={<PlaceIcon />}
@@ -124,6 +136,7 @@ function SpotCard({ spot }) {
         )}
       </Box>
 
+      {/* ... Reste du code inchangé ... */}
       {Array.isArray(spot?.imageUrls) && spot.imageUrls.length > 1 ? (
         <Stack
           direction="row"
@@ -554,7 +567,7 @@ const AllSpotsContent = () => {
   useEffect(() => {
     if (!advancedMode) {
       setLoading(true);
-      request("http://localhost:8088/AUTH-SERVICE/api/v1/spots/get/all", "GET", {}, false)
+      request("http://localhost:8088/api/v1/spots/get/all", "GET", {}, false)
         .then((response) => {
           if (Array.isArray(response?.data)) {
             setSpots(response.data);
@@ -589,7 +602,7 @@ const AllSpotsContent = () => {
       console.log('🔍 Recherche avancée avec params:', params);
 
       const response = await request(
-        "http://localhost:8088/AUTH-SERVICE/api/v1/spots/search",
+        "http://localhost:8088/api/v1/spots/search",
         "POST",
         params,
         false

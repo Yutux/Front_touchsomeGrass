@@ -10,7 +10,7 @@ export default function PrivateRoute() {
 
   useEffect(() => {
     if (token) {
-      request(`http://localhost:8088/AUTH-SERVICE/api/v1/auth/validate`, 'GET', {}, true)
+      request(`http://localhost:8088/api/v1/auth/validate`, 'GET', {}, true)
         .then((response) => {
           if (response.status === 200) {
             setIsValid(response.data === true);

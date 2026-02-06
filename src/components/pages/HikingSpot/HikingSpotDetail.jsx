@@ -13,8 +13,10 @@ import {
 import { GoogleMap, Marker, Polyline, LoadScript } from "@react-google-maps/api";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import CommentSection from "../../Comments/CommentSection";
+import FavoriteButton from "../../UI/FavoriteButton";
 
-const API_URL = "http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/get";
+const API_URL = "http://localhost:8088/api/v1/hikingspot/get";
 
 export default function HikingSpotDetail() {
   const { id } = useParams();
@@ -63,7 +65,7 @@ export default function HikingSpotDetail() {
   const images = [
     ...(hikingSpot.imageUrls || []),
     ...(hikingSpot.imagePath
-      ? [`http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${hikingSpot.imagePath}`]
+      ? [`http://localhost:8088/api/v1/uploads/${hikingSpot.imagePath}`]
       : []),
   ];
 
@@ -82,16 +84,37 @@ export default function HikingSpotDetail() {
         margin: "0 auto",
       }}
     >
-      {/* 🏔️ Titre principal */}
-      <Typography variant="h4" gutterBottom fontWeight="bold">
-        {hikingSpot.name}
-      </Typography>
-      <Typography variant="subtitle2" color="text.secondary">
-        Créé par : {creatorName}
-      </Typography>
+      {/* 🔥 NOUVEAU HEADER avec bouton favoris */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          justifyContent: 'space-between', 
+          mb: 1,
+          gap: 2
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" gutterBottom fontWeight="bold">
+            {hikingSpot.name}
+          </Typography>
+          <Typography variant="subtitle2" color="text.secondary">
+            Créé par : {creatorName}
+          </Typography>
+        </Box>
+
+        {/* 🔥 BOUTON FAVORIS - À côté du titre */}
+        <FavoriteButton 
+          spotId={id} 
+          type="hiking"
+          size="large"
+          color="error"
+        />
+      </Box>
+
       <Divider sx={{ my: 2 }} />
 
-      {/* 🖼️ Galerie d’images */}
+      {/* 🖼️ Galerie d'images */}
       {images.length > 0 && (
         <Box sx={{ position: "relative", mb: 3 }}>
           <CardMedia
@@ -229,37 +252,8 @@ export default function HikingSpotDetail() {
         </LoadScript>
       </Paper>
 
-      {/* 💬 Commentaires (statique pour l’instant) */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          💬 Commentaires
-        </Typography>
-        <Paper
-          sx={{
-            p: 1.5,
-            mb: 1.5,
-            borderRadius: 2,
-            backgroundColor: "rgba(0,0,0,0.03)",
-          }}
-        >
-          <Typography variant="subtitle2">Alice</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Une superbe randonnée ! Les vues sont magnifiques 🌄
-          </Typography>
-        </Paper>
-        <Paper
-          sx={{
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: "rgba(0,0,0,0.03)",
-          }}
-        >
-          <Typography variant="subtitle2">Marc</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Le passage près de la cascade est glissant mais splendide 💧
-          </Typography>
-        </Paper>
-      </Paper>
+      {/* 💬 Section commentaires */}
+      <CommentSection spotId={id} type="hiking" />
     </Box>
   );
 }

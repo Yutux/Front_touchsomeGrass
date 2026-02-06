@@ -139,7 +139,7 @@ export default function TrajetMap() {
 
     try {
       const token = localStorage.getItem("token") || "";
-      const res = await fetch("http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/create", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/hikingspot/create`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: fd,

@@ -18,7 +18,7 @@ const AllUsers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8088/AUTH-SERVICE/api/v1/auth/users", {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/users`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

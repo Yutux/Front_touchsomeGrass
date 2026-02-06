@@ -41,9 +41,9 @@ const center = { lat: 48.8566, lng: 2.3522 }; // Paris par défaut
 // ❗ Pas de .env : on garde tout en dur pour l’instant
 const GOOGLE_MAPS_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
 const GET_SPOT_URL = (id: string) =>
-  `http://localhost:8088/AUTH-SERVICE/api/v1/spots/get/${id}`;
+  `http://localhost:8088 /api/v1/spots/get/${id}`;
 const UPDATE_SPOT_URL = (id: string) =>
-  `http://localhost:8088/AUTH-SERVICE/api/v1/spots/update/${id}`;
+  `http://localhost:8088 /api/v1/spots/update/${id}`;
 
 export default function UpdateSpotPage() {
   const { id } = useParams<{ id: string }>();

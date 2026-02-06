@@ -26,7 +26,15 @@ import AllUsers from './components/containers/ProfileUser/AllUsers';
 import UserDetails from './components/containers/ProfileUser/UserDetails';
 import SearchPage from './components/search/SearchPage';
 import TrajetMap from './components/Map/TrajetMap';
+import FriendsList from './components/Social/FriendsList';
+import GroupsList from './components/Social/GroupsList';
+import GroupDetails from './components/Social/GroupDetails';
 import HomeCarousel from './components/pages/Carrousel/HomeCarrousel';
+import UsersListPage from './components/pages/Profile/UsersListPage';
+import UserProfilePage from './components/pages/Profile/UserProfilePage';
+import NotificationsPage from './components/pages/Notifications/NotificationsPage';
+import { NotificationsProvider } from './components/contexts/NotificationsContext/NotificationsContext';
+import ChatProvider from './components/contexts/ChatContext/ChatContext';
 
 
 function Layout() {
@@ -80,6 +88,12 @@ function Layout() {
             <Route path="/user/:id" element={<UserDetails />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/CreateHikingSpots" element={<TrajetMap />} />
+            <Route path="/friends" element={<FriendsList />} />
+            <Route path="/groups" element={<GroupsList />} />
+            <Route path="/groups/:id" element={<GroupDetails />} />
+            <Route path="/users" element={<UsersListPage />} />
+            <Route path="/profile/:userId" element={<UserProfilePage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             
             
           
@@ -117,9 +131,13 @@ export default function App() {
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <UserProvider>
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
+        <NotificationsProvider>
+          <ChatProvider>
+            <BrowserRouter>
+              <Layout />
+            </BrowserRouter>
+          </ChatProvider>
+        </NotificationsProvider>
       </UserProvider>
     </MantineProvider>
   );

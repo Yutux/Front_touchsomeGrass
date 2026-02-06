@@ -28,6 +28,7 @@ import { PlaceData } from "../../types/place";
 import { reverseGeocode } from "../utils/googleHelpers";
 import MapContainer from "./MapContainer";
 
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 const center = { lat: 48.8566, lng: 2.3522 }; // Paris
 //const GOOGLE_API_KEY = "AIzaSyBHiBCqOdyA356J87JgT3ZWnKR2zr7_Rvs";
 
@@ -183,7 +184,7 @@ export default function GoogleMapSearch({
       formData.append("spot", new Blob([JSON.stringify(spotData)], { type: "application/json" }));
       files.forEach((file) => formData.append("files", file));
 
-      const response = await fetch("http://localhost:8088/AUTH-SERVICE/api/v1/spots/create", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/spots/create`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

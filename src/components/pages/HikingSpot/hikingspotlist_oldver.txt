@@ -48,7 +48,7 @@
 //     spot?.imagePath && (spot.imagePath.startsWith("http") || spot.imagePath.startsWith("https"))
 //       ? spot.imagePath
 //       : spot?.imagePath
-//       ? `http://localhost:8088/AUTH-SERVICE/api/v1/uploads/${spot.imagePath}`
+//       ? `http://localhost:8088 /api/v1/uploads/${spot.imagePath}`
 //       : (spot?.imageUrls && spot.imageUrls[0]) || "/images/no-image.png";
 
 //   const distance = typeof spot?.distance === "number" ? spot.distance : null;
@@ -270,7 +270,7 @@
 //   const [loading, setLoading] = useState(true);
 
 //   useEffect(() => {
-//     request("http://localhost:8088/AUTH-SERVICE/api/v1/hikingspot/get/all", "GET", {}, false)
+//     request("http://localhost:8088 /api/v1/hikingspot/get/all", "GET", {}, false)
 //       .then((response) => {
 //         if (response?.data?.hikingSpots) setHikingSpots(response.data.hikingSpots);
 //         else setHikingSpots([]);
