@@ -12,23 +12,35 @@ export default function SignupForm() {
 	const [nameInput, setNameInput] = useState("");
 	const navigate = useNavigate();
 
-	function signup(e) {
+	async function signup(e) {
 		e.preventDefault();
+		console.log("signup called");
+		console.log("API URL:", import.meta.env.VITE_API_BASE_URL);
+		
 		if (passwordInput !== confirmPasswordInput) {
 			setSignupMessage("Les mots de passe ne correspondent pas");
-		} else {
-			request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/register`, 'POST', {
-				email: emailInput,
-				password: passwordInput,
-				firstname: pseudoInput,
-				lastname: nameInput
-			}, false).then((res) => {
-				if (res.status === 200) {
-					navigate('/profile');
-					setSignupMessage(res.data.message);
-				} else {
-					setSignupMessage(res.data.message);
-				}});
+			return;
+		}
+
+		try {
+			const res = await request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/register`, 'POST', {
+			email: emailInput,
+			password: passwordInput,
+			firstname: pseudoInput,
+			lastname: nameInput
+			}, false);
+
+			console.log("response:", res);
+
+			if (res.status === 200) {
+			navigate('/profile');
+			setSignupMessage(res.data.message);
+			} else {
+			setSignupMessage(res.data.message);
+			}
+		} catch (err) {
+			console.error("Erreur request:", err);
+			setSignupMessage("Une erreur est survenue, réessaie.");
 		}
 	}
 	return (
