@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import request from "../components/utils/request";
 import { PlaceData } from "../types/place";
 /**
@@ -21,7 +22,7 @@ export async function createSpot(spotData: PlaceData, files: File[]) {
 
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch("http://localhost:8088/api/v1/spots/create", {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/spots/create`, {
     method: "POST",
     headers,
     body: formData,
@@ -35,5 +36,5 @@ export async function createSpot(spotData: PlaceData, files: File[]) {
  * Exemple d’utilisation de ta fonction request() pour les endpoints JSON
  */
 export async function getAllSpots() {
-  return await request("http://localhost:8088/api/v1/spots/get/all", "GET", null, true);
+  return await request(`${import.meta.env.VITE_API_BASE_URL}/api/v1/spots/get/all`, "GET", null, true);
 }
