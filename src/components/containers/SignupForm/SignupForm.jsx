@@ -75,7 +75,7 @@ export default function SignupForm() {
 					type="password"
 					value={confirmPasswordInput} onChange={(e) => setConfirmPasswordInput(e.target.value)}
 				/>
-				<button onClick={signup}>Sign up</button>
+				<button type="button" onClick={signup}>Sign up</button>
 				<p>{signupMessage}</p>
 			</form>
 		</div>
